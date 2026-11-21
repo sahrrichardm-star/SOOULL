@@ -1609,3 +1609,8 @@ body { color: #f8fafc; background: #080d17; }
   .story-editor { max-height: calc(100svh - 16px); padding: 24px 18px; border-radius: 12px; }
   .story-editor h2 { font-size: clamp(25px, 7vw, 32px); }
 }
+
+.legacy-access-explainer ol { display: grid; gap: 10px; margin: 12px 0 16px; padding-left: 22px; color: #d6deea; font-size: 13px; line-height: 1.65; }
+.legacy-access-explainer li::marker { color: #edbd63; font-weight: 800; }
+.legacy-access-explainer li strong { color: #fff; }
+.legacy-access-caution { margin: 0; padding: 12px 14px; border-left: 3px solid #edbd63; border-radius: 0 8px 8px 0; color: #f0dcb7 !important; background: rgba(237,189,99,.08); font-size: 12px !important; line-height: 1.6; }
