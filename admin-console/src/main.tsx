@@ -53,6 +53,9 @@ function App() {
         if (factorError) throw factorError
         const verified = factorData.totp.filter(item => item.status === 'verified')
         if (!active) return
+        const { data: activeRole, error: roleCheckError } = await supabase!.rpc('current_admin_role')
+        if (roleCheckError) throw roleCheckError
+        if (!activeRole) { setStage('not-admin'); return }
         setFactors(verified.map(item => ({ id: item.id, friendly_name: item.friendly_name })))
         if (assurance.currentLevel !== 'aal2') {
           if (verified.length) {
