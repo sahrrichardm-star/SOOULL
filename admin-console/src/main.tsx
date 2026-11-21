@@ -56,6 +56,12 @@ function App() {
         const { data: activeRole, error: roleCheckError } = await supabase!.rpc('current_admin_role')
         if (roleCheckError) throw roleCheckError
         if (!activeRole) { setStage('not-admin'); return }
+        // Discard abandoned, unverified enrollments. An interrupted QR setup must be restarted.
+        const pending = factorData.totp.filter(item => item.status === 'unverified')
+        for (const factor of pending) {
+          const { error: cleanupError } = await supabase!.auth.mfa.unenroll({ factorId: factor.id })
+          if (cleanupError) throw cleanupError
+        }
         setFactors(verified.map(item => ({ id: item.id, friendly_name: item.friendly_name })))
         if (assurance.currentLevel !== 'aal2') {
           if (verified.length) {
@@ -210,17 +216,19 @@ function App() {
         {stage === 'sent' && <button className="admin-auth-link" type="button" onClick={() => setStage('signin')}>Back to sign in</button>}
         {stage === 'mfa' && <form className="admin-auth-form" onSubmit={verifyFactor}>
           {factors.length > 1 && <><label htmlFor="admin-factor">Authenticator</label><select id="admin-factor" value={factorId} onChange={event => setFactorId(event.target.value)}>{factors.map((factor,index) => <option key={factor.id} value={factor.id}>{factor.friendly_name || 'Authenticator ' + (index + 1)}</option>)}</select></>}
+          <p className="admin-auth-step">Open the authenticator app you enrolled for SOOULL. Enter the current six-digit code shown beside your SOOULL account. It changes approximately every 30 seconds.</p>
           <label htmlFor="admin-code">Six-digit authenticator code</label>
           <input id="admin-code" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} required value={code} onChange={event => setCode(event.target.value.replace(/\D/g,'').slice(0,6))} />
           <button className="dashboard-primary" type="submit" disabled={busy || code.length !== 6}>{busy ? 'Verifying…' : 'Verify and continue'} <ShieldCheck size={16} /></button>
         </form>}
         {stage === 'enroll' && <div className="admin-auth-form">
           {!qrCode ? <button className="dashboard-primary" type="button" onClick={() => void beginEnrollment()} disabled={busy}>{busy ? 'Preparing…' : 'Set up authenticator'} <KeyRound size={16} /></button> : <form onSubmit={verifyEnrollment}>
-            <p className="admin-auth-step">1. Scan this QR code with your authenticator app.</p>
+            <p className="admin-auth-step">1. Open an authenticator app such as Google Authenticator, Microsoft Authenticator, or 1Password. Add an account and scan this QR code. The app—not SMS or Google Password Manager—generates a rotating six-digit code every 30 seconds.</p>
             <img className="admin-auth-qr" src={qrCode.startsWith('data:') ? qrCode : 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(qrCode)} alt="Authenticator setup QR code" />
-            <label htmlFor="admin-secret">Manual setup key</label>
+            <label htmlFor="admin-secret">Manual setup key (keep private)</label>
             <input id="admin-secret" readOnly value={secret} onFocus={event => event.currentTarget.select()} />
-            <label htmlFor="enrol-code">2. Enter the six-digit code</label>
+            <p className="admin-auth-step">2. Find the SOOULL entry in your authenticator app and enter its current six-digit code below.</p>
+            <label htmlFor="enrol-code">Authenticator code</label>
             <input id="enrol-code" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} required value={code} onChange={event => setCode(event.target.value.replace(/\D/g,'').slice(0,6))} />
             <button className="dashboard-primary" type="submit" disabled={busy || code.length !== 6}>{busy ? 'Verifying…' : 'Enable two-step verification'} <ShieldCheck size={16} /></button>
           </form>}
