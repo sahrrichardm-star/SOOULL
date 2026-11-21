@@ -35,5 +35,11 @@ jobs:
       - name: Audit dependencies
         run: npm audit --audit-level=high
 
-      - name: Build and smoke test production bundle
+      - name: Build and smoke test customer production bundle
         run: npm run build
+
+      - name: Install locked admin dependencies
+        run: npm ci --prefix admin-console --no-audit --no-fund
+
+      - name: Build administrator production bundle
+        run: npm run build --prefix admin-console
