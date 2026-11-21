@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import type { User } from '@supabase/supabase-js'
 import {
-  ArrowLeft, ArrowUpRight, BookHeart, BookOpen, CalendarDays, Download, Heart, Infinity, LockKeyhole,
+  ArrowLeft, ArrowRight, ArrowUpRight, BookHeart, BookOpen, CalendarDays, ChevronLeft, ChevronRight, Download, Heart, Infinity, LockKeyhole,
   KeyRound, Mail, Mic, MicOff, Pencil, Plus, Search, Settings, ShieldCheck, Sparkles, Trash2, Upload, Users, X,
 } from 'lucide-react'
 import { isSupabaseConfigured, supabase } from './lib/supabase'
@@ -1043,6 +1043,7 @@ function MemberSpace({ user, onSignOut }: { user: User; onSignOut: () => void })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
+  const storyRailRef = useRef<HTMLDivElement | null>(null)
   const [editorOpen, setEditorOpen] = useState(false)
   const [editingStory, setEditingStory] = useState<Story | null>(null)
   const [title, setTitle] = useState('')
@@ -1794,14 +1795,14 @@ function MemberSpace({ user, onSignOut }: { user: User; onSignOut: () => void })
               <p>{search ? 'Try another word or clear your search.' : 'Capture a moment, a lesson, a person or a memory you never want to lose.'}</p>
               {!search && <button className="dashboard-primary" type="button" onClick={openNewStory}><Plus size={16} /> Write your first story</button>}
             </div>
-          : <div className="story-grid">{visibleStories.map((story) => (
+          : <div className="story-rail-wrap"><button className="story-rail-arrow" type="button" aria-label="Scroll stories left" onClick={() => storyRailRef.current?.scrollBy({ left: -360, behavior: "smooth" })}><ChevronLeft size={20} /></button><div className="story-grid story-rail" ref={storyRailRef}>{visibleStories.map((story) => (
               <article className="story-card" key={story.id}>
                 <div className="story-card-top"><span className="story-category">{story.category}</span><button className={story.is_favorite ? 'favorite-button active' : 'favorite-button'} type="button" onClick={() => void toggleFavorite(story)} aria-label={story.is_favorite ? 'Remove from favourites' : 'Add to favourites'}><Heart size={17} fill={story.is_favorite ? 'currentColor' : 'none'} /></button></div>
                 <h3>{story.title}</h3>
                 <p>{story.content || 'A story saved for another day. Add the details whenever you are ready.'}</p>
                 <div className="story-card-bottom"><span>{story.story_date ? new Date(`${story.story_date}T12:00:00`).toLocaleDateString(undefined, { dateStyle: 'medium' }) : new Date(story.created_at).toLocaleDateString(undefined, { dateStyle: 'medium' })}</span><div><button type="button" onClick={() => openEditStory(story)} aria-label={`Edit ${story.title}`}><Pencil size={15} /></button><button type="button" onClick={() => void removeStory(story)} aria-label={`Delete ${story.title}`}><Trash2 size={15} /></button></div></div>
               </article>
-            ))}</div>}
+            ))}</div><button className="story-rail-arrow" type="button" aria-label="Scroll stories right" onClick={() => storyRailRef.current?.scrollBy({ left: 360, behavior: "smooth" })}><ChevronRight size={20} /></button></div>}
       </section>
 
       </>}
