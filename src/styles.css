@@ -907,3 +907,45 @@ body{background:#080d17;color:#f7f8fb}
  .hero{background:radial-gradient(ellipse at 50% 72%,rgba(30,91,160,.14),transparent 48%)}
  .hero h1{font-size:clamp(46px,10vw,68px);line-height:1.08}
 }
+
+
+/* SOOULL contrast system: dark surfaces use white text; gold is reserved for emphasis */
+:root {
+  --surface-0: #080d17;
+  --surface-1: #101827;
+  --surface-2: #162235;
+  --ink-on-dark: #f7f9fc;
+  --muted-on-dark: #d5deea;
+  --ink-on-light: #101827;
+  --gold-action: #e9b95e;
+  --blue-accent: #2878d0;
+}
+body, .site-shell, .member-shell, .admin-shell { color: var(--ink-on-dark); background-color: var(--surface-0); }
+.admin-shell h1, .admin-shell h2, .admin-shell h3,
+.admin-shell strong, .admin-shell label, .admin-shell th { color: var(--ink-on-dark); }
+.admin-alert strong { color: #fff !important; font-size: 14px; }
+.admin-alert p { color: #f4e8e8 !important; }
+.admin-alert { background: #241012; border-color: rgba(255,130,130,.42); }
+.admin-metric-card, .admin-panel, .admin-customers-panel { color: var(--ink-on-dark); background: var(--surface-1); }
+.admin-metric-label, .admin-panel p, .admin-customers-panel > p { color: var(--muted-on-dark); }
+.admin-users-table td { color: var(--muted-on-dark); }
+.admin-search-input, .auth-input-wrap, .account-form input, .account-form select,
+.account-form textarea { color: var(--ink-on-dark); background-color: var(--surface-2); }
+.admin-search-input::placeholder, input::placeholder, textarea::placeholder { color: #aebbd0; opacity: 1; }
+:where(button, a, input, select, textarea):focus-visible {
+  outline: 2px solid var(--gold-bright);
+  outline-offset: 3px;
+}
+.primary-link, .dashboard-primary, .auth-submit {
+  color: #17120a;
+  background: var(--gold-action);
+  border-color: var(--gold-action);
+}
+.primary-link:hover, .dashboard-primary:hover:not(:disabled), .auth-submit:hover:not(:disabled) {
+  color: #100d08;
+  background: #ffdf9a;
+}
+@media (prefers-contrast: more) {
+  .hero-copy, .section-heading p, .pillar-card p, .how-grid p,
+  .privacy-copy p, .closing-cta p, .admin-heading p { color: #fff; }
+}
