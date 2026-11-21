@@ -1696,3 +1696,13 @@ body { color: #f8fafc; background: #080d17; }
 /* Replace rotating wait indicators with quiet, non-blocking visual states. */
 .loading-ring { animation: none !important; border: 2px solid rgba(237,189,99,.35) !important; border-top-color: #edbd63 !important; }
 .stories-empty:has(.loading-ring) { min-height: 112px; }
+
+.member-nav-shell { display:grid; grid-template-columns:30px minmax(0,1fr) 30px; align-items:center; gap:6px; min-width:0; margin-bottom:18px; }
+.member-nav-shell .member-nav { margin:0; }
+.member-nav-arrow { display:grid; place-items:center; width:28px; height:32px; border:1px solid rgba(237,189,99,.35); border-radius:8px; background:#111c2d; color:#edbd63; cursor:pointer; }
+.member-nav-arrow:hover { background:#edbd63; color:#17212e; }
+@media(min-width:900px) {
+ .member-nav-shell { grid-template-columns:1fr; }
+ .member-nav-arrow { display:none; }
+ .member-nav { flex-wrap:wrap; overflow:visible; }
+}
