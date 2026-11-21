@@ -51,13 +51,14 @@ function App() {
         ])
         if (assuranceError) throw assuranceError
         if (factorError) throw factorError
-        const verified = factorData.totp.filter(item => item.status === 'verified')
+        const allTotp = factorData.totp as Array<{ id: string; friendly_name?: string; status: string }>
+        const verified = allTotp.filter(item => item.status === 'verified')
         if (!active) return
         const { data: activeRole, error: roleCheckError } = await supabase!.rpc('current_admin_role')
         if (roleCheckError) throw roleCheckError
         if (!activeRole) { setStage('not-admin'); return }
         // Discard abandoned, unverified enrollments. An interrupted QR setup must be restarted.
-        const pending = factorData.totp.filter(item => item.status === 'unverified')
+        const pending = allTotp.filter(item => item.status === 'unverified')
         for (const factor of pending) {
           const { error: cleanupError } = await supabase!.auth.mfa.unenroll({ factorId: factor.id })
           if (cleanupError) throw cleanupError
