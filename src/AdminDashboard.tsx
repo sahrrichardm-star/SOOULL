@@ -9,6 +9,7 @@ type AdminUser = { id: string; email: string; name: string; created_at: string; 
 
 type AdminRole = { role_key: string; display_name: string; description: string }
 type AdminMembership = { user_id: string; email: string; role: string; is_active: boolean; created_at: string }
+type AdminAuditRow = { id: string; actor_id: string; actor_email: string | null; target_user_id: string | null; target_email: string | null; action: string; details: Record<string, unknown> | null; created_at: string }
 
 type AdminMetrics = {
   registered_users: number
@@ -53,7 +54,7 @@ export default function AdminDashboard({ onSignOut }: { onSignOut: () => void })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [refreshedAt, setRefreshedAt] = useState('')
-  const [activeTab, setActiveTab] = useState<'overview' | 'customers' | 'administrators'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'customers' | 'administrators' | 'audit'>('overview')
   const [admins, setAdmins] = useState<AdminMembership[]>([])
   const [adminRoles, setAdminRoles] = useState<AdminRole[]>([])
   const [adminEmail, setAdminEmail] = useState('')
@@ -66,6 +67,8 @@ export default function AdminDashboard({ onSignOut }: { onSignOut: () => void })
   const [userPage, setUserPage] = useState(1)
   const [usersHaveMore, setUsersHaveMore] = useState(false)
   const [userSearch, setUserSearch] = useState('')
+  const [auditRows, setAuditRows] = useState<AdminAuditRow[]>([])
+  const [auditLoading, setAuditLoading] = useState(false)
 
   const load = useCallback(async () => {
     if (!supabase) {
@@ -109,6 +112,25 @@ export default function AdminDashboard({ onSignOut }: { onSignOut: () => void })
       setError(await functionErrorMessage(caught, 'Unable to load customer accounts.'))
     } finally {
       setUsersLoading(false)
+    }
+  }, [])
+
+  const loadAudit = useCallback(async () => {
+    if (!supabase) return
+    setAuditLoading(true)
+    setError('')
+    try {
+      const { data, error: invokeError } = await supabase.functions.invoke('admin-overview', {
+        method: 'POST',
+        body: { action: 'audit' },
+      })
+      if (invokeError) throw invokeError
+      if (data?.error) throw new Error(String(data.error))
+      setAuditRows((data?.audit ?? []) as AdminAuditRow[])
+    } catch (caught) {
+      setError(await functionErrorMessage(caught, 'Unable to load the administrator audit history.'))
+    } finally {
+      setAuditLoading(false)
     }
   }, [])
 
@@ -216,6 +238,7 @@ export default function AdminDashboard({ onSignOut }: { onSignOut: () => void })
         <button type="button" className={activeTab === "overview" ? "active" : ""} onClick={() => setActiveTab("overview")}>Overview</button>
         {role !== "analytics_admin" && <button type="button" className={activeTab === "customers" ? "active" : ""} onClick={() => { setActiveTab("customers"); if (users.length === 0) void loadUsers(1) }}>Customers</button>}
         {role === "super_admin" && <button type="button" className={activeTab === "administrators" ? "active" : ""} onClick={() => { setActiveTab("administrators"); if (admins.length === 0) void loadAdmins() }}>Administrators</button>}
+        {role !== "analytics_admin" && <button type="button" className={activeTab === "audit" ? "active" : ""} onClick={() => { setActiveTab("audit"); if (auditRows.length === 0) void loadAudit() }}>Audit history</button>}
       </nav>
 
       <section className="admin-metric-grid" aria-label="Platform metrics">
@@ -290,6 +313,27 @@ export default function AdminDashboard({ onSignOut }: { onSignOut: () => void })
           <span>Page {userPage}</span>
           <button type="button" className="account-secondary-button" disabled={usersLoading || !usersHaveMore} onClick={() => void loadUsers(userPage + 1)}>Next</button>
         </div>
+      </section>}
+      {activeTab === "audit" && role !== "analytics_admin" && <section className="admin-customers-panel">
+        <div className="admin-panel-heading"><ShieldCheck size={18} /><h2>Administrator audit history</h2></div>
+        <p>Recent privileged actions and platform access events. This view contains operational metadata only, not customer stories or private files.</p>
+        <div className="admin-pagination">
+          <span>{auditRows.length} recent events (maximum 100)</span>
+          <button type="button" className="account-secondary-button" disabled={auditLoading} onClick={() => void loadAudit()}><RefreshCw size={14} /> {auditLoading ? 'Refreshing…' : 'Refresh history'}</button>
+        </div>
+        {auditLoading ? <p className="admin-status-note">Loading audit history…</p> : <div className="admin-table-wrap">
+          <table className="admin-users-table">
+            <thead><tr><th>Time</th><th>Action</th><th>Administrator</th><th>Target account</th><th>Details</th></tr></thead>
+            <tbody>{auditRows.map(item => <tr key={item.id}>
+              <td>{new Date(item.created_at).toLocaleString()}</td>
+              <td><strong>{item.action}</strong></td>
+              <td>{item.actor_email || (item.actor_id ? item.actor_id.slice(0, 8) + '…' : 'System')}</td>
+              <td>{item.target_email || (item.target_user_id ? item.target_user_id.slice(0, 8) + '…' : '—')}</td>
+              <td><small>{item.details ? JSON.stringify(item.details) : '—'}</small></td>
+            </tr>)}</tbody>
+          </table>
+          {!auditRows.length && <p className="admin-status-note">No audit events have been recorded yet.</p>}
+        </div>}
       </section>}
       <footer className="admin-footer">
         <span>SOOULL · ADMINISTRATION</span>
