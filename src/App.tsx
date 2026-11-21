@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import type { User } from '@supabase/supabase-js'
 import {
-  ArrowLeft, ArrowRight, ArrowUpRight, BookHeart, BookOpen, CalendarDays, ChevronLeft, ChevronRight, Download, Heart, Infinity, LockKeyhole,
+  ArrowLeft, ArrowUpRight, BookHeart, BookOpen, CalendarDays, ChevronLeft, ChevronRight, Download, Heart, Infinity, LockKeyhole,
   KeyRound, Mail, Mic, MicOff, Pencil, Plus, Search, Settings, ShieldCheck, Sparkles, Trash2, Upload, Users, X,
 } from 'lucide-react'
 import { isSupabaseConfigured, supabase } from './lib/supabase'
