@@ -179,6 +179,17 @@ export default function LegacyAccessModule({ userId }: { userId: string }) {
         <div><span className="eyebrow"><HeartHandshake size={14} /> FUTURE ACCESS</span><h2>Legacy Access</h2><p>Choose who may receive specific memories and records, and define when a verified access process may begin.</p></div>
       </div>
 
+      <section className="legacy-access-card legacy-access-explainer">
+        <h3>How Legacy Access works</h3>
+        <ol>
+          <li><strong>Add a trusted person.</strong> They need their own SOOULL account using the same email address you nominate, and they must accept your invitation.</li>
+          <li><strong>Choose exactly what they may receive.</strong> You select individual stories, legacy entries, safekeeping records or assets for each person. This does not give them access to your whole account, passwords, wallet credentials or sign-in details.</li>
+          <li><strong>Choose when a review may begin.</strong> A verified life-event request or your inactivity settings can start a review process. Inactivity starts with warnings and a response period; it does not release anything automatically.</li>
+          <li><strong>Evidence and approval come before release.</strong> A request must be independently checked before selected items can be released.</li>
+        </ol>
+        <p className="legacy-access-caution"><strong>Important:</strong> the invitation and selected-item setup are present, but the complete evidence-submission, administrator review and controlled-release workflow is still under development. Do not rely on Legacy Access as an active legal or emergency release service yet.</p>
+      </section>
+
       {error && <p className="form-feedback form-error" role="alert">{error}</p>}
       {message && <p className="form-feedback form-success" role="status">{message}</p>}
 
