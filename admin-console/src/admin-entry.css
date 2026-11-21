@@ -22,3 +22,9 @@
 .admin-auth-footer{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:24px;padding-top:16px;border-top:1px solid #29384d;color:#aeb9c9;font-size:10px;text-align:center}
 .admin-auth-panel .loading-ring{width:20px;height:20px}
 @media(max-width:480px){.admin-auth-screen{padding:12px}.admin-auth-panel{border-radius:14px}.admin-auth-footer{font-size:9px}}
+.admin-auth-screen { align-items: start; overflow-y: auto; overscroll-behavior: contain; padding-top: max(16px, env(safe-area-inset-top)); padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+.admin-auth-panel { margin: auto; }
+.admin-auth-form input[inputmode="numeric"] { letter-spacing: .24em; font-variant-numeric: tabular-nums; text-align: center; font-size: 18px; }
+.admin-auth-step { margin: 2px 0 6px; color: #dce3ed; line-height: 1.65; }
+.admin-auth-form input[readonly] { user-select: all; -webkit-user-select: all; }
+@media (max-width: 480px) { .admin-auth-screen { padding-left: 10px; padding-right: 10px; } .admin-auth-panel { width: 100%; } }
