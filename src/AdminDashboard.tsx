@@ -26,6 +26,19 @@ type AdminMetrics = {
 }
 
 const number = (value: unknown) => new Intl.NumberFormat().format(Number(value ?? 0))
+const functionErrorMessage = async (caught: unknown, fallback: string) => {
+  if (caught && typeof caught === 'object' && 'context' in caught) {
+    const context = (caught as { context?: Response }).context
+    if (context && typeof context.clone === 'function') {
+      const body = await context.clone().json().catch(() => null) as { error?: string } | null
+      if (body?.error) return body.error
+      if (context.status === 403) return 'Your administrator session needs verified two-step authentication. Enrol an authenticator and sign in again.'
+      if (context.status === 401) return 'Your session has expired. Sign in again.'
+    }
+  }
+  return caught instanceof Error ? caught.message : fallback
+}
+
 const bytes = (value: unknown) => {
   const size = Number(value ?? 0)
   if (!size) return '0 B'
@@ -71,7 +84,7 @@ export default function AdminDashboard({ onSignOut }: { onSignOut: () => void })
       setMetrics(data.metrics as AdminMetrics)
       setRefreshedAt(String(data.generatedAt ?? new Date().toISOString()))
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Unable to load administrator metrics.')
+      setError(await functionErrorMessage(caught, 'Unable to load administrator metrics.'))
       setMetrics(null)
     } finally {
       setLoading(false)
@@ -93,7 +106,7 @@ export default function AdminDashboard({ onSignOut }: { onSignOut: () => void })
       setUserPage(Number(data?.page ?? page))
       setUsersHaveMore(Boolean(data?.hasMore))
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Unable to load customer accounts.')
+      setError(await functionErrorMessage(caught, 'Unable to load customer accounts.'))
     } finally {
       setUsersLoading(false)
     }
