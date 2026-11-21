@@ -92,16 +92,16 @@ export default function AdminDashboard({ onSignOut }: { onSignOut: () => void })
   useEffect(() => { void load() }, [load])
 
   const cards = [
-    { label: 'Registered customers', value: metrics ? number(metrics?.registered_users) : 'Unavailable', detail: '+' + number(metrics?.new_users_7d) + ' in the last 7 days', icon: Users },
-    { label: 'Active customers', value: metrics ? number(metrics?.active_users_30d) : 'Unavailable', detail: 'Signed in within 30 days', icon: Activity },
-    { label: 'Saved stories', value: metrics ? number(metrics?.stories) : 'Unavailable', detail: 'Private customer records', icon: BookOpen },
-    { label: 'Legacy entries', value: metrics ? number(metrics?.legacy_entries) : 'Unavailable', detail: 'Private legacy records', icon: Archive },
-    { label: 'Private assets', value: metrics ? number(metrics?.assets) : 'Unavailable', detail: 'Files stored in SOOULL', icon: HardDrive },
-    { label: 'Storage used', value: metrics ? bytes(metrics?.storage_bytes) : 'Unavailable', detail: 'Based on registered asset sizes', icon: Database },
-    { label: 'Wallet records', value: metrics ? number(metrics?.wallet_records) : 'Unavailable', detail: 'Private customer references', icon: Wallet },
-    { label: 'Active AI personas', value: metrics ? number(metrics?.enabled_personas) : 'Unavailable', detail: 'Enabled persona profiles', icon: BrainCircuit },
-    { label: 'Trusted people', value: metrics ? number(metrics?.trusted_people_records) : 'Unavailable', detail: 'Owner-managed trusted contacts', icon: Users },
-    { label: 'Pending legacy requests', value: metrics ? number(metrics?.legacy_access_requests_pending) : 'Unavailable', detail: 'Awaiting independent verification', icon: ShieldAlert },
+    { label: 'Registered customers', value: metrics ? number(metrics?.registered_users) : 'Unavailable', detail: metrics ? '+' + number(metrics.new_users_7d) + ' in the last 7 days' : 'Available after secure admin sign-in', icon: Users },
+    { label: 'Active customers', value: metrics ? number(metrics?.active_users_30d) : 'Unavailable', detail: metrics ? 'Signed in within 30 days' : 'Available after secure admin sign-in', icon: Activity },
+    { label: 'Saved stories', value: metrics ? number(metrics?.stories) : 'Unavailable', detail: metrics ? 'Private customer records' : 'Available after secure admin sign-in', icon: BookOpen },
+    { label: 'Legacy entries', value: metrics ? number(metrics?.legacy_entries) : 'Unavailable', detail: metrics ? 'Private legacy records' : 'Available after secure admin sign-in', icon: Archive },
+    { label: 'Private assets', value: metrics ? number(metrics?.assets) : 'Unavailable', detail: metrics ? 'Files stored in SOOULL' : 'Available after secure admin sign-in', icon: HardDrive },
+    { label: 'Storage used', value: metrics ? bytes(metrics?.storage_bytes) : 'Unavailable', detail: metrics ? 'Based on registered asset sizes' : 'Available after secure admin sign-in', icon: Database },
+    { label: 'Wallet records', value: metrics ? number(metrics?.wallet_records) : 'Unavailable', detail: metrics ? 'Private customer references' : 'Available after secure admin sign-in', icon: Wallet },
+    { label: 'Active AI personas', value: metrics ? number(metrics?.enabled_personas) : 'Unavailable', detail: metrics ? 'Enabled persona profiles' : 'Available after secure admin sign-in', icon: BrainCircuit },
+    { label: 'Trusted people', value: metrics ? number(metrics?.trusted_people_records) : 'Unavailable', detail: metrics ? 'Owner-managed trusted contacts' : 'Available after secure admin sign-in', icon: Users },
+    { label: 'Pending legacy requests', value: metrics ? number(metrics?.legacy_access_requests_pending) : 'Unavailable', detail: metrics ? 'Awaiting independent verification' : 'Available after secure admin sign-in', icon: ShieldAlert },
   ]
 
   return (
