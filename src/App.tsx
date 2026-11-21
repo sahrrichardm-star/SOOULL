@@ -1,6 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import type { User } from '@supabase/supabase-js'
-import AdminDashboard from './AdminDashboard'
 import {
   ArrowLeft, ArrowUpRight, BookHeart, BookOpen, CalendarDays, Download, Heart, Infinity, LockKeyhole,
   KeyRound, Mail, Mic, MicOff, Pencil, Plus, Search, Settings, ShieldCheck, Sparkles, Trash2, Upload, Users, X,
@@ -1035,8 +1034,6 @@ function MemberSpace({ user, onSignOut }: { user: User; onSignOut: () => void })
   const [stories, setStories] = useState<Story[]>([])
   const [profileName, setProfileName] = useState('')
   const [activeSection, setActiveSection] = useState<'stories' | 'legacy' | 'safekeeping' | 'vault' | 'persona' | 'trusted' | 'legacy-access' | 'account'>('stories')
-  const [adminRole, setAdminRole] = useState<string | null>(null)
-  const [adminRoleChecked, setAdminRoleChecked] = useState(false)
   const [accountMenuOpen, setAccountMenuOpen] = useState(false)
   const [loadingStories, setLoadingStories] = useState(true)
   const [exporting, setExporting] = useState(false)
@@ -1056,24 +1053,6 @@ function MemberSpace({ user, onSignOut }: { user: User; onSignOut: () => void })
   const [dictationPreview, setDictationPreview] = useState('')
   const [dictationError, setDictationError] = useState('')
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
-
-  useEffect(() => {
-    let active = true
-    async function checkAdministratorRole() {
-      if (!supabase) { setAdminRoleChecked(true); return }
-      try {
-        const { data, error } = await supabase.rpc('current_admin_role')
-        if (error) throw error
-        if (active) setAdminRole(typeof data === 'string' ? data : null)
-      } catch {
-        if (active) setAdminRole(null)
-      } finally {
-        if (active) setAdminRoleChecked(true)
-      }
-    }
-    void checkAdministratorRole()
-    return () => { active = false }
-  }, [user.id])
 
   useEffect(() => () => { recognitionRef.current?.stop() }, [])
 
@@ -1756,13 +1735,6 @@ function MemberSpace({ user, onSignOut }: { user: User; onSignOut: () => void })
     || (typeof metadata.first_name === 'string' ? metadata.first_name.trim() : '')
     || (typeof metadata.full_name === 'string' ? metadata.full_name.trim().split(/\s+/)[0] : '')
     || 'Member'
-
-  const isAdminRoute = window.location.pathname.replace(/\/+$/, '') === '/admin' || window.location.hostname === 'soull-admin.vercel.app'
-  if (isAdminRoute) {
-    if (!adminRoleChecked) return <main className="auth-screen"><section className="auth-panel"><div className="loading-ring" /><h1>Checking administrator access.</h1></section></main>
-    if (!adminRole) return <main className="auth-screen"><section className="auth-panel"><div className="eyebrow"><ShieldCheck size={14} /> RESTRICTED AREA</div><h1>Administrator access required.</h1><p className="auth-intro">This account has not been granted an active SOOULL administrator role.</p><a className="auth-submit" href="/">Return to SOOULL</a></section></main>
-    return <AdminDashboard onSignOut={onSignOut} />
-  }
 
   return (
     <main className="member-shell">
