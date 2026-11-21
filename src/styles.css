@@ -949,3 +949,41 @@ body, .site-shell, .member-shell, .admin-shell { color: var(--ink-on-dark); back
   .hero-copy, .section-heading p, .pillar-card p, .how-grid p,
   .privacy-copy p, .closing-cta p, .admin-heading p { color: #fff; }
 }
+
+
+/* Administrator management controls */
+.admin-invite-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  padding: 20px;
+  margin: 20px 0;
+  border: 1px solid rgba(233,185,94,.24);
+  border-radius: 14px;
+  background: #101827;
+}
+.admin-invite-form label {
+  display: grid;
+  gap: 7px;
+  color: #f7f9fc;
+  font-size: 13px;
+  font-weight: 600;
+}
+.admin-invite-form input, .admin-invite-form select {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #40506a;
+  border-radius: 9px;
+  color: #fff;
+  background: #162235;
+  font: inherit;
+}
+.admin-invite-form input::placeholder { color: #b7c3d4; opacity: 1; }
+.admin-invite-form button { align-self: end; min-height: 44px; }
+.admin-management-panel > p { color: #d5deea; }
+.admin-management-panel .admin-status-note { color: #f7f9fc; }
+@media (max-width: 680px) {
+  .admin-invite-form { grid-template-columns: 1fr; padding: 14px; }
+  .admin-invite-form button { width: 100%; }
+}
