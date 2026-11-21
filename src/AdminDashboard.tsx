@@ -7,7 +7,10 @@ import { supabase } from './lib/supabase'
 
 type AdminUser = { id: string; email: string; name: string; created_at: string; last_sign_in_at: string | null; email_confirmed_at: string | null; banned_until: string | null }
 
-type AdminRole = { role_key: string; display_name: string; description: string }\ntype AdminMembership = { user_id: string; email: string; role: string; is_active: boolean; created_at: string }\n\ntype AdminMetrics = {
+type AdminRole = { role_key: string; display_name: string; description: string }
+type AdminMembership = { user_id: string; email: string; role: string; is_active: boolean; created_at: string }
+
+type AdminMetrics = {
   registered_users: number
   new_users_7d: number
   active_users_30d: number
@@ -37,7 +40,14 @@ export default function AdminDashboard({ onSignOut }: { onSignOut: () => void })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [refreshedAt, setRefreshedAt] = useState('')
-  const [activeTab, setActiveTab] = useState<'overview' | 'customers' | 'administrators'>('overview')\n  const [admins, setAdmins] = useState<AdminMembership[]>([])\n  const [adminRoles, setAdminRoles] = useState<AdminRole[]>([])\n  const [adminEmail, setAdminEmail] = useState('')\n  const [adminRole, setAdminRole] = useState('operations_admin')\n  const [adminReason, setAdminReason] = useState('')\n  const [adminBusy, setAdminBusy] = useState(false)\n  const [adminMessage, setAdminMessage] = useState('')
+  const [activeTab, setActiveTab] = useState<'overview' | 'customers' | 'administrators'>('overview')
+  const [admins, setAdmins] = useState<AdminMembership[]>([])
+  const [adminRoles, setAdminRoles] = useState<AdminRole[]>([])
+  const [adminEmail, setAdminEmail] = useState('')
+  const [adminRole, setAdminRole] = useState('operations_admin')
+  const [adminReason, setAdminReason] = useState('')
+  const [adminBusy, setAdminBusy] = useState(false)
+  const [adminMessage, setAdminMessage] = useState('')
   const [users, setUsers] = useState<AdminUser[]>([])
   const [usersLoading, setUsersLoading] = useState(false)
   const [userPage, setUserPage] = useState(1)
@@ -191,7 +201,8 @@ export default function AdminDashboard({ onSignOut }: { onSignOut: () => void })
 
       <nav className="admin-nav-tabs" aria-label="Administration sections">
         <button type="button" className={activeTab === "overview" ? "active" : ""} onClick={() => setActiveTab("overview")}>Overview</button>
-        {role !== "analytics_admin" && <button type="button" className={activeTab === "customers" ? "active" : ""} onClick={() => { setActiveTab("customers"); if (users.length === 0) void loadUsers(1) }}>Customers</button>}\n        {role === "super_admin" && <button type="button" className={activeTab === "administrators" ? "active" : ""} onClick={() => { setActiveTab("administrators"); if (admins.length === 0) void loadAdmins() }}>Administrators</button>}
+        {role !== "analytics_admin" && <button type="button" className={activeTab === "customers" ? "active" : ""} onClick={() => { setActiveTab("customers"); if (users.length === 0) void loadUsers(1) }}>Customers</button>}
+        {role === "super_admin" && <button type="button" className={activeTab === "administrators" ? "active" : ""} onClick={() => { setActiveTab("administrators"); if (admins.length === 0) void loadAdmins() }}>Administrators</button>}
       </nav>
 
       <section className="admin-metric-grid" aria-label="Platform metrics">
