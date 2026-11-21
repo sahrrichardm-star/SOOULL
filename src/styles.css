@@ -1692,3 +1692,7 @@ body { color: #f8fafc; background: #080d17; }
  .family-tree-modal-panel { padding:22px 16px; }
  .member-nav { margin-bottom:12px; }
 }
+
+/* Replace rotating wait indicators with quiet, non-blocking visual states. */
+.loading-ring { animation: none !important; border: 2px solid rgba(237,189,99,.35) !important; border-top-color: #edbd63 !important; }
+.stories-empty:has(.loading-ring) { min-height: 112px; }
