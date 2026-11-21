@@ -52,12 +52,6 @@ type SpeechRecognitionLike = {
 }
 type SpeechRecognitionConstructor = new () => SpeechRecognitionLike
 
-const pillars = [
-  { icon: BookHeart, title: 'Stories', description: 'Preserve the moments, memories and lessons that make your life uniquely yours.' },
-  { icon: Infinity, title: 'Legacy', description: 'Pass on the values, wishes and knowledge you want future generations to carry.' },
-  { icon: ShieldCheck, title: 'Safekeeping', description: 'Keep what matters together, with privacy and control at the heart of the experience.' },
-]
-
 function BrandMark({ large = false }: { large?: boolean }) {
   return (
     <span className={large ? 'brand-art brand-art-large' : 'brand-art'} aria-hidden="true">
