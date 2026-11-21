@@ -1614,3 +1614,8 @@ body { color: #f8fafc; background: #080d17; }
 .legacy-access-explainer li::marker { color: #edbd63; font-weight: 800; }
 .legacy-access-explainer li strong { color: #fff; }
 .legacy-access-caution { margin: 0; padding: 12px 14px; border-left: 3px solid #edbd63; border-radius: 0 8px 8px 0; color: #f0dcb7 !important; background: rgba(237,189,99,.08); font-size: 12px !important; line-height: 1.6; }
+
+/* Persistent customer app chrome: keep account actions and section navigation in reach. */
+.member-topbar { position: sticky; top: 0; z-index: 40; background: rgba(8,13,23,.97); backdrop-filter: blur(14px); }
+.member-nav { position: sticky; top: 88px; z-index: 35; background: rgba(8,13,23,.96); backdrop-filter: blur(12px); }
+@media (max-width: 700px) { .member-nav { top: 60px; } }
