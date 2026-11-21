@@ -7,6 +7,7 @@ type Contact = { id: string; full_name: string; email: string | null; relationsh
 type Recipient = { id: string; trusted_contact_id: string; recipient_email: string; invitation_status: string; recipient_user_id: string | null }
 type Item = { id: string; title: string; content_type: 'story' | 'legacy_entry' | 'safekeeping_record' | 'asset'; detail: string }
 type Notification = { id: string; kind: string; title: string; body: string; created_at: string; read_at: string | null }
+type Invitation = { recipient_id: string; owner_name: string | null; created_at: string }
 
 export default function LegacyAccessModule({ userId }: { userId: string }) {
   const [plan, setPlan] = useState<Plan>({ life_event_enabled: false, inactivity_enabled: false, inactivity_days: 7, last_confirmed_at: new Date().toISOString() })
@@ -15,6 +16,7 @@ export default function LegacyAccessModule({ userId }: { userId: string }) {
   const [items, setItems] = useState<Item[]>([])
   const [grants, setGrants] = useState<Array<{ recipient_id: string; content_type: string; content_id: string }>>([])
   const [notifications, setNotifications] = useState<Notification[]>([])
+  const [invitations, setInvitations] = useState<Invitation[]>([])
   const [selectedRecipient, setSelectedRecipient] = useState('')
   const [selectedContent, setSelectedContent] = useState<string[]>([])
   const [newContactId, setNewContactId] = useState('')
@@ -28,7 +30,7 @@ export default function LegacyAccessModule({ userId }: { userId: string }) {
     if (!supabase) { setError('SOOULL is not connected to its secure database.'); setLoading(false); return }
     setLoading(true); setError('')
     try {
-      const [planResult, contactResult, recipientResult, grantResult, storyResult, legacyResult, safeResult, assetResult, notificationResult] = await Promise.all([
+      const [planResult, contactResult, recipientResult, grantResult, storyResult, legacyResult, safeResult, assetResult, notificationResult, invitationResult] = await Promise.all([
         supabase.from('legacy_access_plans').select('life_event_enabled,inactivity_enabled,inactivity_days,last_confirmed_at').eq('owner_id', userId).maybeSingle(),
         supabase.from('trusted_contacts').select('id,full_name,email,relationship').eq('user_id', userId).order('full_name'),
         supabase.from('legacy_access_recipients').select('id,trusted_contact_id,recipient_email,invitation_status,recipient_user_id').eq('owner_id', userId).order('created_at'),
@@ -37,9 +39,10 @@ export default function LegacyAccessModule({ userId }: { userId: string }) {
         supabase.from('legacy_entries').select('id,title').eq('user_id', userId).order('created_at', { ascending: false }),
         supabase.from('safekeeping_records').select('id,title').eq('user_id', userId).order('created_at', { ascending: false }),
         supabase.from('assets').select('id,title,asset_type').eq('user_id', userId).order('created_at', { ascending: false }),
-        supabase.from('legacy_access_notifications').select('id,kind,title,body,created_at,read_at').eq('owner_id', userId).order('created_at', { ascending: false }).limit(10),
+        supabase.from('legacy_access_notifications').select('id,kind,title,body,created_at,read_at').or('owner_id.eq.' + userId + ',recipient_user_id.eq.' + userId).order('created_at', { ascending: false }).limit(20),
+        supabase.rpc('my_pending_legacy_access_invitations'),
       ])
-      for (const result of [planResult, contactResult, recipientResult, grantResult, storyResult, legacyResult, safeResult, assetResult, notificationResult]) {
+      for (const result of [planResult, contactResult, recipientResult, grantResult, storyResult, legacyResult, safeResult, assetResult, notificationResult, invitationResult]) {
         if (result.error) throw result.error
       }
       if (planResult.data) setPlan(planResult.data as Plan)
@@ -47,6 +50,7 @@ export default function LegacyAccessModule({ userId }: { userId: string }) {
       setRecipients((recipientResult.data ?? []) as Recipient[])
       setGrants((grantResult.data ?? []) as Array<{ recipient_id: string; content_type: string; content_id: string }>)
       setNotifications((notificationResult.data ?? []) as Notification[])
+      setInvitations((invitationResult.data ?? []) as Invitation[])
       setItems([
         ...((storyResult.data ?? []).map(item => ({ id: item.id, title: item.title, content_type: 'story' as const, detail: 'Story' }))),
         ...((legacyResult.data ?? []).map(item => ({ id: item.id, title: item.title, content_type: 'legacy_entry' as const, detail: 'Legacy entry' }))),
@@ -113,7 +117,7 @@ export default function LegacyAccessModule({ userId }: { userId: string }) {
       })
       if (insertError) throw insertError
       setNewContactId(''); setRecipientEmail('')
-      setMessage('Trusted person added to your future-access plan. They are not able to access anything until their own account is verified and the access request is approved.')
+      setMessage('Trusted person added. A pending invitation is now available inside Legacy Access when they sign in using this verified email address. No invitation email is sent yet, and no content is released until verification and approval.')
       await load()
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Unable to add this trusted person.')
@@ -140,6 +144,21 @@ export default function LegacyAccessModule({ userId }: { userId: string }) {
     } finally { setSaving(false) }
   }
 
+  async function acceptInvitation(recipientId: string) {
+    if (!supabase || saving) return
+    setSaving(true); setError(''); setMessage('')
+    try {
+      const { error: acceptError } = await supabase.rpc('accept_legacy_access_invitation', {
+        p_recipient_id: recipientId,
+      })
+      if (acceptError) throw acceptError
+      setMessage('Invitation accepted. Your SOOULL account is now linked as a trusted person. This does not give you immediate access to private content; any release requires the configured verification and approval process.')
+      await load()
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Unable to accept this invitation.')
+    } finally { setSaving(false) }
+  }
+
   async function markNotificationRead(id: string) {
     if (!supabase) return
     const { error: markError } = await supabase.rpc('mark_legacy_access_notification_read', { p_notification_id: id })
@@ -162,6 +181,15 @@ export default function LegacyAccessModule({ userId }: { userId: string }) {
 
       {error && <p className="form-feedback form-error" role="alert">{error}</p>}
       {message && <p className="form-feedback form-success" role="status">{message}</p>}
+
+      {invitations.length > 0 && <section className="legacy-access-card legacy-invitations-card">
+        <h3><HeartHandshake size={18} /> Invitations for you</h3>
+        <p>A SOOULL member has nominated this verified email address as a trusted person. Accepting links your account but does not unlock their private content. Access remains limited to selected items and requires independent verification and approval.</p>
+        {invitations.map(invitation => <article className="legacy-invitation-row" key={invitation.recipient_id}>
+          <div><strong>{invitation.owner_name || 'A SOOULL member'}</strong><small>Invitation received {new Date(invitation.created_at).toLocaleDateString()}</small></div>
+          <button type="button" className="dashboard-primary" disabled={saving} onClick={() => void acceptInvitation(invitation.recipient_id)}>{saving ? 'Please wait…' : 'Accept invitation'}</button>
+        </article>)}
+      </section>}
 
       {notifications.length > 0 && <section className="legacy-access-card legacy-notifications-card">
         <h3><BellRing size={18} /> Activity and alerts</h3>
@@ -210,7 +238,7 @@ export default function LegacyAccessModule({ userId }: { userId: string }) {
           const contact = contacts.find(item => item.id === recipient.trusted_contact_id)
           return <button type="button" className={selectedRecipient === recipient.id ? 'legacy-recipient-row active' : 'legacy-recipient-row'} key={recipient.id} onClick={() => setSelectedRecipient(recipient.id)}>
             <span><strong>{contact?.full_name || recipient.recipient_email}</strong><small>{recipient.recipient_email}</small></span>
-            <span className="legacy-recipient-status">{recipient.invitation_status}</span>
+            <span className="legacy-recipient-status">{recipient.invitation_status === 'accepted' ? 'Account linked' : recipient.invitation_status === 'revoked' ? 'Revoked' : 'Awaiting acceptance'}</span>
           </button>
         })}</div>}
       </section>
