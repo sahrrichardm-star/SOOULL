@@ -868,3 +868,42 @@ button:active,
 .closing-cta .primary-link{margin:0 auto}
 @media(max-width:800px){.how-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.privacy-section{grid-template-columns:1fr;gap:28px}}
 @media(max-width:520px){.hero-actions{align-items:flex-start;flex-direction:column;gap:8px}.how-grid{grid-template-columns:1fr}.how-section,.privacy-section,.closing-cta{width:min(100% - 32px,1160px);padding:58px 0}}
+
+
+/* Brand-aligned landing page contrast and typography correction */
+:root{
+  color-scheme:dark;
+  --gold:#e9b95e;
+  --gold-bright:#ffdf9a;
+  --blue:#2878d0;
+  --muted:#cbd3e0;
+  --line:rgba(233,185,94,.24);
+  background:#080d17;
+  color:#f7f8fb;
+}
+body{background:#080d17;color:#f7f8fb}
+.site-shell{color:#f7f8fb}
+.topbar{border-bottom-color:rgba(233,185,94,.25)}
+.topbar-note{color:#d6deeb}
+.hero{background:radial-gradient(ellipse at 78% 45%,rgba(30,91,160,.15),transparent 43%)}
+.eyebrow{color:#f2c66e;text-shadow:none}
+.hero h1,.section-heading h2,.privacy-copy h2,.closing-cta h2{color:#fff;font-weight:600}
+.hero h1 span{color:#f2c66e}
+.hero-copy,.section-heading p,.pillar-card p,.how-grid p,.privacy-copy p,.closing-cta p{color:#d8e0ec}
+.hero-bottom-note{color:#cbd5e1}
+.pillar-card,.how-grid article{background:linear-gradient(145deg,rgba(24,48,78,.58),rgba(13,22,36,.88));border-color:rgba(233,185,94,.27)}
+.pillar-card h3,.how-grid h3{color:#fff}
+.pillar-index{color:#f0c36c}
+.pillar-icon{color:#f4ca78;border-color:rgba(233,185,94,.42);background:rgba(233,185,94,.1)}
+.primary-link{color:#17120a;background:linear-gradient(110deg,#f5d58f,#e1ad4e);border-color:#f5d58f;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.primary-link:hover{color:#100d08;background:#ffe3a6}
+.hero-secondary-link{color:#e5edf8}
+.hero-trust-note{color:#d7e0ed}
+.privacy-section{border-color:rgba(233,185,94,.2)}
+.privacy-points p{color:#e1e8f2}
+.closing-cta{background:radial-gradient(ellipse at center,rgba(30,91,160,.13),transparent 68%)}
+.art-tagline{color:#f0d9aa}
+@media(max-width:800px){
+ .hero{background:radial-gradient(ellipse at 50% 72%,rgba(30,91,160,.14),transparent 48%)}
+ .hero h1{font-size:clamp(46px,10vw,68px);line-height:1.08}
+}
