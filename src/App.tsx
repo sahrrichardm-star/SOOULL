@@ -1025,7 +1025,7 @@ function readSooullBackupZip(buffer: ArrayBuffer) {
   if (!manifest) throw new Error('The SOOULL backup manifest is missing.')
   if (manifest.byteLength > 64 * 1024 * 1024) throw new Error('The backup manifest is too large to restore safely.')
   const backup = JSON.parse(decoder.decode(manifest)) as Record<string, unknown>
-  if (backup.application !== 'SOOULL' || ![3, 4, 5, 6].includes(Number(backup.format_version))) {
+  if (backup.application !== 'SOOULL' || ![3, 4, 5, 6, 7].includes(Number(backup.format_version))) {
     throw new Error('This is not a supported SOOULL backup version.')
   }
   return { backup, files }
@@ -1084,7 +1084,7 @@ function MemberSpace({ user, onSignOut }: { user: User; onSignOut: () => void })
       const [
         storyResult, legacyResult, safeResult, assetResult, walletResult, profileResult,
         personaProfileResult, personaConsentResult, personaSourceResult,
-        personaConversationResult, personaMessageResult, trustedContactsResult,
+        personaConversationResult, personaMessageResult, trustedContactsResult, familyTreesResult, familyTreeMembersResult,
         legacyAccessPlanResult, legacyAccessRecipientResult, legacyAccessGrantResult,
       ] = await Promise.all([
         fetchAllRows('stories', 'id,title,content,category,story_date,is_favorite,created_at,updated_at'),
@@ -1099,13 +1099,15 @@ function MemberSpace({ user, onSignOut }: { user: User; onSignOut: () => void })
         fetchAllRows('persona_conversations', 'id,title,created_at,updated_at'),
         fetchAllRows('persona_messages', 'id,conversation_id,role,content,source_refs,model_id,created_at', 10000),
         fetchAllRows('trusted_contacts', 'id,full_name,relationship,email,phone,notes,is_primary,created_at,updated_at'),
+        fetchAllRows('family_trees', 'id,name,description,created_at,updated_at'),
+        fetchAllRows('family_tree_members', 'id,tree_id,full_name,relationship,phone,email,birth_date,death_date,notes,parent_member_id,created_at,updated_at'),
         supabase.from('legacy_access_plans').select('life_event_enabled,inactivity_enabled,inactivity_days,last_confirmed_at,created_at,updated_at').eq('owner_id', user.id).maybeSingle(),
         fetchAllRows('legacy_access_recipients', 'id,trusted_contact_id,recipient_email,invitation_status,created_at,updated_at', 50000, 'owner_id'),
         fetchAllRows('legacy_access_grants', 'id,recipient_id,content_type,content_id,created_at', 50000, 'owner_id'),
       ])
       const failed = storyResult.error || legacyResult.error || safeResult.error || assetResult.error ||
         walletResult.error || profileResult.error || personaProfileResult.error || personaConsentResult.error ||
-        personaSourceResult.error || personaConversationResult.error || personaMessageResult.error || trustedContactsResult.error || legacyAccessPlanResult.error || legacyAccessRecipientResult.error || legacyAccessGrantResult.error
+        personaSourceResult.error || personaConversationResult.error || personaMessageResult.error || trustedContactsResult.error || familyTreesResult.error || familyTreeMembersResult.error || legacyAccessPlanResult.error || legacyAccessRecipientResult.error || legacyAccessGrantResult.error
       if (failed) throw failed
 
       const assets = assetResult.data ?? []
@@ -1117,7 +1119,7 @@ function MemberSpace({ user, onSignOut }: { user: User; onSignOut: () => void })
 
       const backup = {
         application: 'SOOULL',
-        format_version: 6,
+        format_version: 7,
         exported_at: new Date().toISOString(),
         account: { id: user.id, email: user.email ?? null, profile: profileResult.data ?? null },
         collections: {
@@ -1127,6 +1129,8 @@ function MemberSpace({ user, onSignOut }: { user: User; onSignOut: () => void })
           assets: assets,
           wallet: walletResult.data ?? [],
           trusted_people: trustedContactsResult.data ?? [],
+          family_trees: familyTreesResult.data ?? [],
+          family_tree_members: familyTreeMembersResult.data ?? [],
         },
         legacy_access: {
           plan: legacyAccessPlanResult.data ?? null,
@@ -1268,6 +1272,8 @@ function MemberSpace({ user, onSignOut }: { user: User; onSignOut: () => void })
       const assetRaw = rows(collections.assets, 'assets', 50000)
       const walletRaw = rows(collections.wallet, 'wallet records')
       const trustedRaw = rows(collections.trusted_people, 'trusted people')
+      const familyTreesRaw = rows(collections.family_trees, 'family trees', 5000)
+      const familyTreeMembersRaw = rows(collections.family_tree_members, 'family tree members', 50000)
       const legacyAccess = backup.legacy_access && typeof backup.legacy_access === 'object' ? backup.legacy_access as Record<string, unknown> : {}
       const legacyAccessPlanRaw = legacyAccess.plan && typeof legacyAccess.plan === 'object' ? legacyAccess.plan as Record<string, unknown> : null
       const legacyRecipientRaw = rows(legacyAccess.recipients, 'legacy access recipients', 50000)
@@ -1305,6 +1311,21 @@ function MemberSpace({ user, onSignOut }: { user: User; onSignOut: () => void })
           created_at: stamp(r.created_at), updated_at: stamp(r.updated_at),
         }
       })
+
+      const familyTrees = familyTreesRaw.map(r => ({
+        id: uuid(r.id, 'family trees'), owner_id: user.id, name: str(r.name, 'family trees', 120, true),
+        description: str(r.description, 'family trees', 500), created_at: stamp(r.created_at), updated_at: stamp(r.updated_at),
+      }))
+      const familyTreeIds = new Set(familyTrees.map(t => t.id))
+      const familyTreeMembers = familyTreeMembersRaw.map(r => ({
+        id: uuid(r.id, 'family tree members'), tree_id: uuid(r.tree_id, 'family tree members'),
+        owner_id: user.id, full_name: str(r.full_name, 'family tree members', 160, true),
+        relationship: str(r.relationship, 'family tree members', 100), phone: str(r.phone, 'family tree members', 40),
+        email: str(r.email, 'family tree members', 254), birth_date: date(r.birth_date, 'family tree members'),
+        death_date: date(r.death_date, 'family tree members'), notes: str(r.notes, 'family tree members', 2000),
+        parent_member_id: r.parent_member_id ? uuid(r.parent_member_id, 'family tree members') : null,
+        created_at: stamp(r.created_at), updated_at: stamp(r.updated_at),
+      })).filter(m => familyTreeIds.has(m.tree_id))
 
       const allowedMime = ['image/jpeg','image/png','image/webp','image/gif','application/pdf','text/plain','text/csv','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/rtf','text/rtf','application/vnd.oasis.opendocument.spreadsheet','application/vnd.oasis.opendocument.text','audio/mpeg','audio/mp4','audio/wav','audio/webm','audio/ogg','video/mp4','video/webm','video/quicktime']
       const pendingAssets: { row: Record<string, unknown>; bytes: Uint8Array; name: string; mime: string; existingPath: string }[] = []
@@ -1521,6 +1542,19 @@ function MemberSpace({ user, onSignOut }: { user: User; onSignOut: () => void })
       await batchUpsert('legacy_entries', legacy)
       await batchUpsert('safekeeping_records', safeRecords)
       await batchUpsert('trusted_contacts', trusted)
+      if (familyTrees.length) await batchUpsert('family_trees', familyTrees)
+      if (familyTreeMembers.length) {
+        const remaining = [...familyTreeMembers]
+        const inserted = new Set<string>()
+        while (remaining.length) {
+          const ready = remaining.filter(m => !m.parent_member_id || inserted.has(m.parent_member_id))
+          if (!ready.length) throw new Error('The family tree backup contains a circular or missing parent relationship.')
+          await batchUpsert('family_tree_members', ready)
+          ready.forEach(m => inserted.add(m.id))
+          const readyIds = new Set(ready.map(m => m.id))
+          for (let i = remaining.length - 1; i >= 0; i--) if (readyIds.has(remaining[i].id)) remaining.splice(i, 1)
+        }
+      }
       if (legacyPlan.length) await batchUpsert('legacy_access_plans', legacyPlan, 'owner_id')
       if (legacyRecipients.length) await batchUpsert('legacy_access_recipients', legacyRecipients)
       if (legacyGrants.length) await batchUpsert('legacy_access_grants', legacyGrants, 'recipient_id,content_type,content_id')
