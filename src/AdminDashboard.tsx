@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import {
   Activity, Archive, ArrowLeft, BrainCircuit, Database, RefreshCw, LogOut,
   ShieldAlert, ShieldCheck, Users, Wallet, BookOpen, HardDrive,
@@ -110,7 +110,7 @@ export default function AdminDashboard({ onSignOut }: { onSignOut: () => void })
     }
   }, [adminRole])
 
-  const submitAdminInvite = async (event: React.FormEvent<HTMLFormElement>) => {
+  const submitAdminInvite = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!supabase || !adminEmail.trim()) return
     setAdminBusy(true)
