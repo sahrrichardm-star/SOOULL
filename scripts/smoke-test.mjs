@@ -69,7 +69,7 @@ try {
   const workerResponse = await fetch(new URL('/sw.js', host))
   assert.equal(workerResponse.status, 200, 'Service worker must be available.')
   const worker = await workerResponse.text()
-  assert.match(worker, /sooull-shell-v2/, 'Service worker cache version must be present.')
+  assert.match(worker, /sooull-shell-v3/, 'Service worker cache version must be present.')
   assert.match(worker, /\/assets\//, 'Service worker must cache same-origin build assets.')
   assert.ok(worker.includes('Supabase auth, database,') && worker.includes('Storage and all private account responses are deliberately never cached.'), 'Service worker must explicitly avoid caching private data.')
 
