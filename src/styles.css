@@ -1561,3 +1561,25 @@ body { color: #f8fafc; background: #080d17; }
   .dashboard-stat strong { font-size: 19px; }
   .member-nav button { padding-inline: 8px; font-size: 10px; }
 }
+
+
+/* Trusted-person invitation inbox */
+.legacy-invitation-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 12px;
+  padding: 13px 14px;
+  border: 1px solid #34445b;
+  border-radius: 10px;
+  background: #0b1422;
+}
+.legacy-invitation-row > div { display: grid; gap: 4px; min-width: 0; }
+.legacy-invitation-row strong { color: #fff; font-size: 13px; }
+.legacy-invitation-row small { color: #c4cad5; font-size: 11px; }
+.legacy-invitation-row button { flex: 0 0 auto; }
+@media (max-width: 620px) {
+  .legacy-invitation-row { align-items: stretch; flex-direction: column; }
+  .legacy-invitation-row button { width: 100%; }
+}
