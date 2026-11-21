@@ -6,8 +6,8 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#f7f7f4",
-  "theme_color": "#f7f7f4",
+  "background_color": "#080d17",
+  "theme_color": "#080d17",
   "icons": [
     {
       "src": "/sooull-mark.svg",
