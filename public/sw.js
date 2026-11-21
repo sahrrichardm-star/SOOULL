@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sooull-shell-v2'
+const CACHE_NAME = 'sooull-shell-v3'
 const APP_SHELL = ['/manifest.webmanifest', '/sooull-mark.svg']
 
 self.addEventListener('install', (event) => {
