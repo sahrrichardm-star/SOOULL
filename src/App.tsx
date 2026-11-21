@@ -1774,7 +1774,6 @@ function MemberSpace({ user, onSignOut }: { user: User; onSignOut: () => void })
             <button className="account-menu-trigger" type="button" aria-expanded={accountMenuOpen} onClick={() => setAccountMenuOpen(open => !open)}><Settings size={16} /> Account <span aria-hidden="true">▾</span></button>
             {accountMenuOpen && <div className="account-menu-panel">
               <button type="button" onClick={() => { setActiveSection('account'); setAccountMenuOpen(false) }}><Settings size={15} /> Account settings</button>
-              {adminRole && <a href="/admin"><ShieldCheck size={15} /> Admin dashboard</a>}
               <button type="button" onClick={onSignOut}><ArrowLeft size={15} /> Sign out</button>
             </div>}
           </div>
