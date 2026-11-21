@@ -7,7 +7,7 @@ import { supabase } from './lib/supabase'
 
 type AdminUser = { id: string; email: string; name: string; created_at: string; last_sign_in_at: string | null; email_confirmed_at: string | null; banned_until: string | null }
 
-type AdminMetrics = {
+type AdminRole = { role_key: string; display_name: string; description: string }\ntype AdminMembership = { user_id: string; email: string; role: string; is_active: boolean; created_at: string }\n\ntype AdminMetrics = {
   registered_users: number
   new_users_7d: number
   active_users_30d: number
@@ -37,7 +37,7 @@ export default function AdminDashboard({ onSignOut }: { onSignOut: () => void })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [refreshedAt, setRefreshedAt] = useState('')
-  const [activeTab, setActiveTab] = useState<'overview' | 'customers'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'customers' | 'administrators'>('overview')\n  const [admins, setAdmins] = useState<AdminMembership[]>([])\n  const [adminRoles, setAdminRoles] = useState<AdminRole[]>([])\n  const [adminEmail, setAdminEmail] = useState('')\n  const [adminRole, setAdminRole] = useState('operations_admin')\n  const [adminReason, setAdminReason] = useState('')\n  const [adminBusy, setAdminBusy] = useState(false)\n  const [adminMessage, setAdminMessage] = useState('')
   const [users, setUsers] = useState<AdminUser[]>([])
   const [usersLoading, setUsersLoading] = useState(false)
   const [userPage, setUserPage] = useState(1)
@@ -90,6 +90,67 @@ export default function AdminDashboard({ onSignOut }: { onSignOut: () => void })
   }, [])
 
   useEffect(() => { void load() }, [load])
+  const loadAdmins = useCallback(async () => {
+    if (!supabase) return
+    setAdminBusy(true)
+    setAdminMessage('')
+    try {
+      const { data, error: invokeError } = await supabase.functions.invoke('admin-management', {
+        method: 'POST', body: { action: 'list' },
+      })
+      if (invokeError) throw invokeError
+      if (data?.error) throw new Error(String(data.error))
+      setAdmins((data?.admins ?? []) as AdminMembership[])
+      setAdminRoles((data?.roles ?? []) as AdminRole[])
+      if (data?.roles?.length && !data.roles.some((item: AdminRole) => item.role_key === adminRole)) setAdminRole(data.roles[0].role_key)
+    } catch (caught) {
+      setAdminMessage(caught instanceof Error ? caught.message : 'Unable to load administrator accounts.')
+    } finally {
+      setAdminBusy(false)
+    }
+  }, [adminRole])
+
+  const submitAdminInvite = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!supabase || !adminEmail.trim()) return
+    setAdminBusy(true)
+    setAdminMessage('')
+    try {
+      const { data, error: invokeError } = await supabase.functions.invoke('admin-management', {
+        method: 'POST', body: { action: 'invite', email: adminEmail.trim(), role: adminRole, reason: adminReason.trim() },
+      })
+      if (invokeError) throw invokeError
+      if (data?.error) throw new Error(String(data.error))
+      setAdminMessage('Administrator access assigned to ' + String(data.email) + '. The account must complete sign-in and MFA before accessing administration.')
+      setAdminEmail('')
+      setAdminReason('')
+      await loadAdmins()
+    } catch (caught) {
+      setAdminMessage(caught instanceof Error ? caught.message : 'Administrator invitation failed.')
+    } finally {
+      setAdminBusy(false)
+    }
+  }
+
+  const toggleAdminAccess = async (item: AdminMembership) => {
+    if (!supabase || !window.confirm((item.is_active ? 'Deactivate ' : 'Reactivate ') + item.email + ' administrator access?')) return
+    setAdminBusy(true)
+    setAdminMessage('')
+    try {
+      const { data, error: invokeError } = await supabase.functions.invoke('admin-management', {
+        method: 'POST', body: { action: 'set_active', user_id: item.user_id, is_active: !item.is_active, reason: 'Changed by Head Administrator from control centre' },
+      })
+      if (invokeError) throw invokeError
+      if (data?.error) throw new Error(String(data.error))
+      setAdminMessage('Administrator access updated.')
+      await loadAdmins()
+    } catch (caught) {
+      setAdminMessage(caught instanceof Error ? caught.message : 'Administrator access could not be changed.')
+    } finally {
+      setAdminBusy(false)
+    }
+  }
+
 
   const cards = [
     { label: 'Registered customers', value: metrics ? number(metrics?.registered_users) : 'Unavailable', detail: metrics ? '+' + number(metrics.new_users_7d) + ' in the last 7 days' : 'Available after secure admin sign-in', icon: Users },
@@ -130,7 +191,7 @@ export default function AdminDashboard({ onSignOut }: { onSignOut: () => void })
 
       <nav className="admin-nav-tabs" aria-label="Administration sections">
         <button type="button" className={activeTab === "overview" ? "active" : ""} onClick={() => setActiveTab("overview")}>Overview</button>
-        {role !== "analytics_admin" && <button type="button" className={activeTab === "customers" ? "active" : ""} onClick={() => { setActiveTab("customers"); if (users.length === 0) void loadUsers(1) }}>Customers</button>}
+        {role !== "analytics_admin" && <button type="button" className={activeTab === "customers" ? "active" : ""} onClick={() => { setActiveTab("customers"); if (users.length === 0) void loadUsers(1) }}>Customers</button>}\n        {role === "super_admin" && <button type="button" className={activeTab === "administrators" ? "active" : ""} onClick={() => { setActiveTab("administrators"); if (admins.length === 0) void loadAdmins() }}>Administrators</button>}
       </nav>
 
       <section className="admin-metric-grid" aria-label="Platform metrics">
@@ -157,6 +218,29 @@ export default function AdminDashboard({ onSignOut }: { onSignOut: () => void })
         </article>
       </section>
 
+      {activeTab === "administrators" && role === "super_admin" && <section className="admin-customers-panel admin-management-panel">
+        <div className="admin-panel-heading"><ShieldCheck size={18} /><h2>Administrator management</h2></div>
+        <p>Only the Head Administrator can add administrators, assign roles, or revoke access. Delegated administrators cannot appoint or promote other administrators.</p>
+        <form className="admin-invite-form" onSubmit={submitAdminInvite}>
+          <label>SOOULL account email<input type="email" required value={adminEmail} onChange={event => setAdminEmail(event.target.value)} placeholder="person@example.com" /></label>
+          <label>Operational role<select value={adminRole} onChange={event => setAdminRole(event.target.value)}>{adminRoles.map(item => <option key={item.role_key} value={item.role_key}>{item.display_name}</option>)}</select></label>
+          <label>Reason / responsibility<input value={adminReason} onChange={event => setAdminReason(event.target.value)} maxLength={1000} placeholder="e.g. Customer support operations" /></label>
+          <button className="dashboard-primary" type="submit" disabled={adminBusy || !adminRoles.length}>{adminBusy ? 'Working…' : 'Add administrator'}</button>
+        </form>
+        {adminMessage && <p className="admin-status-note" role="status">{adminMessage}</p>}
+        <div className="admin-table-wrap">
+          <table className="admin-users-table">
+            <thead><tr><th>Administrator</th><th>Role</th><th>Status</th><th>Access control</th></tr></thead>
+            <tbody>{admins.map(item => <tr key={item.user_id}>
+              <td><strong>{item.email}</strong><small>Added {new Date(item.created_at).toLocaleDateString()}</small></td>
+              <td>{item.role.replaceAll('_', ' ')}</td>
+              <td><span className={item.is_active ? "admin-status-good" : "admin-status-pending"}>{item.is_active ? "Active" : "Inactive"}</span></td>
+              <td>{item.role === 'super_admin' ? <span className="admin-status-good">Head administrator</span> : <button type="button" className="account-secondary-button" disabled={adminBusy} onClick={() => void toggleAdminAccess(item)}>{item.is_active ? 'Revoke access' : 'Restore access'}</button>}</td>
+            </tr>)}</tbody>
+          </table>
+          {!admins.length && !adminBusy && <p className="admin-status-note">No delegated administrators have been added.</p>}
+        </div>
+      </section>}
       {activeTab === "customers" && role !== "analytics_admin" && <section className="admin-customers-panel">
         <div className="admin-panel-heading"><Users size={18} /><h2>Customer accounts</h2></div>
         <p>Account metadata only. Private stories, documents, voice recordings and AI conversations are not shown here.</p>
