@@ -11,6 +11,7 @@ const VaultModule = lazy(() => import('./VaultModule').then(module => ({ default
 const PersonaModule = lazy(() => import('./PersonaModule').then(module => ({ default: module.PersonaModule })))
 const TrustedPeopleModule = lazy(() => import('./TrustedPeopleModule').then(module => ({ default: module.TrustedPeopleModule })))
 const LegacyAccessModule = lazy(() => import('./LegacyAccessModule'))
+const FamilyTreeModule = lazy(() => import('./FamilyTreeModule'))
 
 type AuthMode = 'signin' | 'signup' | 'reset' | 'update-password'
 type StoryCategory = 'life' | 'family' | 'milestones' | 'lessons' | 'other'
@@ -1033,7 +1034,7 @@ function readSooullBackupZip(buffer: ArrayBuffer) {
 function MemberSpace({ user, onSignOut }: { user: User; onSignOut: () => void }) {
   const [stories, setStories] = useState<Story[]>([])
   const [profileName, setProfileName] = useState('')
-  const [activeSection, setActiveSection] = useState<'stories' | 'legacy' | 'safekeeping' | 'vault' | 'persona' | 'trusted' | 'legacy-access' | 'account'>('stories')
+  const [activeSection, setActiveSection] = useState<'stories' | 'family-tree' | 'legacy' | 'safekeeping' | 'vault' | 'persona' | 'trusted' | 'legacy-access' | 'account'>('stories')
   const [accountMenuOpen, setAccountMenuOpen] = useState(false)
   const [loadingStories, setLoadingStories] = useState(true)
   const [exporting, setExporting] = useState(false)
@@ -1765,6 +1766,7 @@ function MemberSpace({ user, onSignOut }: { user: User; onSignOut: () => void })
       {error && activeSection !== 'stories' && <p className="form-feedback form-error" role="alert">{error}</p>}
       <nav className="member-nav" aria-label="Your SOOULL collections">
         <button type="button" className={activeSection === 'stories' ? 'active' : ''} onClick={() => setActiveSection('stories')}><BookOpen size={16} /> Stories</button>
+        <button type="button" className={activeSection === 'family-tree' ? 'active' : ''} onClick={() => setActiveSection('family-tree')}><Users size={16} /> Family Tree</button>
         <button type="button" className={activeSection === 'legacy' ? 'active' : ''} onClick={() => setActiveSection('legacy')}><Infinity size={16} /> Legacy</button>
         <button type="button" className={activeSection === 'safekeeping' ? 'active' : ''} onClick={() => setActiveSection('safekeeping')}><ShieldCheck size={16} /> Safekeeping</button>
         <button type="button" className={activeSection === 'vault' ? 'active' : ''} onClick={() => setActiveSection('vault')}><LockKeyhole size={16} /> Assets & Wallet</button>
@@ -1806,6 +1808,7 @@ function MemberSpace({ user, onSignOut }: { user: User; onSignOut: () => void })
       </section>
 
       </>}
+      {activeSection === 'family-tree' && <Suspense fallback={<section className="family-tree-skeleton" aria-label="Family tree loading"><div/><div/><div/></section>}><FamilyTreeModule userId={user.id} /></Suspense>}
       {activeSection === 'legacy' && <Suspense fallback={<section className="stories-empty">Loading legacy records…</section>}><LegacyModule userId={user.id} /></Suspense>}
       {activeSection === 'safekeeping' && <Suspense fallback={<section className="stories-empty">Loading safekeeping…</section>}><SafekeepingModule userId={user.id} /></Suspense>}
       {activeSection === 'vault' && <Suspense fallback={<section className="stories-empty">Loading assets and wallet…</section>}><VaultModule userId={user.id} /></Suspense>}
