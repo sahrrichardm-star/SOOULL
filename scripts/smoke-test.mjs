@@ -44,6 +44,18 @@ try {
   assert.ok(javascript.includes('Restore backup'), 'Backup restoration control must be in the application bundle.')
   assert.ok(javascript.includes('Phone number (optional)'), 'Phone number must remain optional in account forms.')
   const appSource = await readFile(new URL('../src/App.tsx', import.meta.url), 'utf8')
+  const gatewaySource = await readFile(new URL('../supabase/functions/sooull-api/index.ts', import.meta.url), 'utf8')
+  assert.ok(gatewaySource.includes('const services = new Set(['), 'Central backend must use an explicit service allowlist.')
+  for (const service of ['admin-overview', 'admin-management', 'persona-chat', 'delete-account']) {
+    assert.ok(gatewaySource.includes(service), 'Central backend is missing service route: ' + service)
+  }
+  assert.ok(gatewaySource.includes('1_048_576'), 'Central backend must enforce the request size limit.')
+  assert.ok(gatewaySource.includes('authorization.startsWith(\'Bearer \')'), 'Central backend must require a signed-in bearer token.')
+  assert.ok(appSource.includes("invoke('sooull-api'") && appSource.includes("service: 'delete-account'"), 'Customer account deletion must use the central backend.')
+  const personaSource = await readFile(new URL('../src/PersonaModule.tsx', import.meta.url), 'utf8')
+  assert.ok(personaSource.includes("invoke('sooull-api'") && personaSource.includes("service: 'persona-chat'"), 'AI Legacy must use the central backend.')
+  const adminSource = await readFile(new URL('../admin-console/src/AdminDashboard.tsx', import.meta.url), 'utf8')
+  assert.ok(adminSource.includes("invoke('sooull-api'") && adminSource.includes("service: 'admin-management'"), 'Administrator operations must use the central backend.')
   assert.ok(appSource.includes('isValidInternationalPhone(normalizedPhone)') && appSource.includes('If you add a phone number'), 'Provided phone numbers must retain international-format validation.')
   const builtAssetNames = await readdir(new URL('../dist/assets/', import.meta.url))
   const vaultChunkName = builtAssetNames.find((name) => name.startsWith('VaultModule-') && name.endsWith('.js'))
