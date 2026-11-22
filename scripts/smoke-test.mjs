@@ -50,7 +50,7 @@ try {
     assert.ok(gatewaySource.includes(service), 'Central backend is missing service route: ' + service)
   }
   assert.ok(gatewaySource.includes('1_048_576'), 'Central backend must enforce the request size limit.')
-  assert.ok(gatewaySource.includes('authorization.startsWith(\'Bearer \')'), 'Central backend must require a signed-in bearer token.')
+  assert.ok(gatewaySource.includes('authorization?.startsWith(\'Bearer \')'), 'Central backend must require a signed-in bearer token.')
   assert.ok(appSource.includes("invoke('sooull-api'") && appSource.includes("service: 'delete-account'"), 'Customer account deletion must use the central backend.')
   const personaSource = await readFile(new URL('../src/PersonaModule.tsx', import.meta.url), 'utf8')
   assert.ok(personaSource.includes("invoke('sooull-api'") && personaSource.includes("service: 'persona-chat'"), 'AI Legacy must use the central backend.')
