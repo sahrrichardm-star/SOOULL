@@ -178,7 +178,7 @@ export function PersonaModule({ userId }: { userId: string }) {
     setError('')
     setChatMessages(current => [...current, { role: 'user', content: prompt }])
     try {
-      const { data, error: invokeError } = await supabase.functions.invoke('persona-chat', { body: { prompt, conversationId } })
+      const { data, error: invokeError } = await supabase.functions.invoke('sooull-api', { body: { prompt, conversationId } })
       if (invokeError) throw invokeError
       if (!data?.answer) throw new Error(data?.error || 'AI response is unavailable.')
       setConversationId(data.conversationId)
