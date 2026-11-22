@@ -1,7 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const configuredOrigin = Deno.env.get("APP_ORIGIN") ?? "https://sooull.vercel.app";
-const allowedOrigins = new Set([configuredOrigin, "https://sooull.vercel.app", "https://soull-admin.vercel.app", "http://localhost:5173"]);
+const allowedOrigins = new Set([configuredOrigin, "https://sooull.vercel.app", "https://soull-admin.vercel.app", "https://soull-admin-console.vercel.app", "http://localhost:5173", "http://localhost:5174"]);
 
 function headers(origin: string | null) {
   const allowed = origin && allowedOrigins.has(origin) ? origin : configuredOrigin;
