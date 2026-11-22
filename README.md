@@ -52,7 +52,11 @@ After changing Vercel environment variables, redeploy so the Vite client bundle 
 
 The repository commits `package-lock.json` for reproducible dependency installs. GitHub Actions at `.github/workflows/ci.yml` uses `npm ci`, runs `npm audit` and builds plus smoke-tests the production bundle.
 
-## Supabase services
+## SOOULL central backend
+
+Customer and administrator frontends remain separate deployments. Their authenticated server-side operations now enter through the single `sooull-api` Edge Function gateway in the primary Supabase project. The gateway accepts only an explicit service allowlist, requires a signed-in JWT, restricts browser origins, limits JSON payloads to 1 MB, and forwards the original user token to the relevant internal service. It never exposes service-role credentials to either browser.
+
+Current internal services routed by the gateway: `admin-overview`, `admin-management`, `persona-chat`, and `delete-account`. Existing service-level authorization, MFA, RLS, and fresh-auth checks remain in force. This is the first consolidation phase: the gateway centralizes the public backend entry point while the existing internal service implementations are retained for a safe migration. The next phase is to move shared business logic into versioned server modules behind this gateway and retire duplicate public entry points only after end-to-end verification.
 
 The application uses the existing SOOULL Supabase project.
 
