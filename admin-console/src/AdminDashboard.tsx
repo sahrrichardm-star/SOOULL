@@ -79,7 +79,7 @@ export default function AdminDashboard({ onSignOut }: { onSignOut: () => void })
     setLoading(true)
     setError('')
     try {
-      const { data, error: invokeError } = await supabase.functions.invoke('sooull-api', { method: 'POST', body: {} })
+      const { data, error: invokeError } = await supabase.functions.invoke('sooull-api', { method: 'POST', body: { service: 'admin-overview' } })
       if (invokeError) throw invokeError
       if (data?.error) throw new Error(String(data.error))
       if (!data?.metrics || typeof data.metrics !== 'object') throw new Error('The administrator service returned an invalid response.')
