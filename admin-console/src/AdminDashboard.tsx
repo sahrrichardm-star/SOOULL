@@ -79,7 +79,7 @@ export default function AdminDashboard({ onSignOut }: { onSignOut: () => void })
     setLoading(true)
     setError('')
     try {
-      const { data, error: invokeError } = await supabase.functions.invoke('admin-overview', { method: 'POST', body: {} })
+      const { data, error: invokeError } = await supabase.functions.invoke('sooull-api', { method: 'POST', body: {} })
       if (invokeError) throw invokeError
       if (data?.error) throw new Error(String(data.error))
       if (!data?.metrics || typeof data.metrics !== 'object') throw new Error('The administrator service returned an invalid response.')
@@ -99,9 +99,9 @@ export default function AdminDashboard({ onSignOut }: { onSignOut: () => void })
     setUsersLoading(true)
     setError('')
     try {
-      const { data, error: invokeError } = await supabase.functions.invoke('admin-overview', {
+      const { data, error: invokeError } = await supabase.functions.invoke('sooull-api', {
         method: 'POST',
-        body: { action: 'users', page, perPage: 25 },
+        body: { service: 'admin-overview', action: 'users', page, perPage: 25 },
       })
       if (invokeError) throw invokeError
       if (data?.error) throw new Error(String(data.error))
@@ -120,9 +120,9 @@ export default function AdminDashboard({ onSignOut }: { onSignOut: () => void })
     setAuditLoading(true)
     setError('')
     try {
-      const { data, error: invokeError } = await supabase.functions.invoke('admin-overview', {
+      const { data, error: invokeError } = await supabase.functions.invoke('sooull-api', {
         method: 'POST',
-        body: { action: 'audit' },
+        body: { service: 'admin-overview', action: 'audit' },
       })
       if (invokeError) throw invokeError
       if (data?.error) throw new Error(String(data.error))
@@ -140,8 +140,8 @@ export default function AdminDashboard({ onSignOut }: { onSignOut: () => void })
     setAdminBusy(true)
     setAdminMessage('')
     try {
-      const { data, error: invokeError } = await supabase.functions.invoke('admin-management', {
-        method: 'POST', body: { action: 'list' },
+      const { data, error: invokeError } = await supabase.functions.invoke('sooull-api', {
+        method: 'POST', body: { service: 'admin-management', action: 'list' },
       })
       if (invokeError) throw invokeError
       if (data?.error) throw new Error(String(data.error))
@@ -161,8 +161,8 @@ export default function AdminDashboard({ onSignOut }: { onSignOut: () => void })
     setAdminBusy(true)
     setAdminMessage('')
     try {
-      const { data, error: invokeError } = await supabase.functions.invoke('admin-management', {
-        method: 'POST', body: { action: 'invite', email: adminEmail.trim(), role: adminRole, reason: adminReason.trim() },
+      const { data, error: invokeError } = await supabase.functions.invoke('sooull-api', {
+        method: 'POST', body: { service: 'admin-management', action: 'invite', email: adminEmail.trim(), role: adminRole, reason: adminReason.trim() },
       })
       if (invokeError) throw invokeError
       if (data?.error) throw new Error(String(data.error))
@@ -182,8 +182,8 @@ export default function AdminDashboard({ onSignOut }: { onSignOut: () => void })
     setAdminBusy(true)
     setAdminMessage('')
     try {
-      const { data, error: invokeError } = await supabase.functions.invoke('admin-management', {
-        method: 'POST', body: { action: 'set_active', user_id: item.user_id, is_active: !item.is_active, reason: 'Changed by Head Administrator from control centre' },
+      const { data, error: invokeError } = await supabase.functions.invoke('sooull-api', {
+        method: 'POST', body: { service: 'admin-management', action: 'set_active', user_id: item.user_id, is_active: !item.is_active, reason: 'Changed by Head Administrator from control centre' },
       })
       if (invokeError) throw invokeError
       if (data?.error) throw new Error(String(data.error))
