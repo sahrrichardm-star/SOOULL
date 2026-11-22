@@ -850,8 +850,8 @@ function AccountSettings({ user, onNameSaved, onExportBackup, onRestoreFile, exp
             const { data: { session }, error: sessionError } = await supabase.auth.getSession()
             if (sessionError) throw sessionError
             if (!session) throw new Error('Your session has expired. Sign in again.')
-            const { data, error: functionError } = await supabase.functions.invoke('delete-account', {
-              body: { confirmation: 'DELETE' },
+            const { data, error: functionError } = await supabase.functions.invoke('sooull-api', {
+              body: { service: 'delete-account', confirmation: 'DELETE' },
             })
             if (functionError) throw functionError
             if (data?.error) throw new Error(data.error)
