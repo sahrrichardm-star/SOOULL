@@ -5,6 +5,7 @@ import {
   KeyRound, Mail, Mic, MicOff, Pencil, Plus, Search, Settings, ShieldCheck, Sparkles, Trash2, Upload, Users, X,
 } from 'lucide-react'
 import { isSupabaseConfigured, supabase } from './lib/supabase'
+import { SooullGuide } from './SooullGuide'
 const LegacyModule = lazy(() => import('./PrivateCollections').then(module => ({ default: module.LegacyModule })))
 const SafekeepingModule = lazy(() => import('./PrivateCollections').then(module => ({ default: module.SafekeepingModule })))
 const VaultModule = lazy(() => import('./VaultModule').then(module => ({ default: module.VaultModule })))
@@ -1856,7 +1857,7 @@ function MemberSpace({ user, onSignOut }: { user: User; onSignOut: () => void })
       {activeSection === 'legacy-access' && <Suspense fallback={<section className="stories-empty">Loading future access…</section>}><LegacyAccessModule userId={user.id} /></Suspense>}
       {activeSection === 'account' && <AccountSettings user={user} onNameSaved={setProfileName} onExportBackup={() => void exportMyData()} onRestoreFile={restoreMyData} exporting={exporting} restoring={restoring} exportProgress={exportProgress} restoreProgress={restoreProgress} />}
 
-      <footer className="dashboard-footer"><span>SOOULL · YOUR LIFE. YOUR LEGACY.</span><span>Private by design.</span></footer>
+      <footer className="dashboard-footer"><span>SOOULL · YOUR LIFE. YOUR LEGACY.</span><span>Private by design.</span></footer>\n      <SooullGuide />
 
       {editorOpen && <div className="auth-screen story-editor-screen" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setEditorOpen(false) }}>
         <section className="auth-panel story-editor" role="dialog" aria-modal="true" aria-labelledby="story-editor-title">
