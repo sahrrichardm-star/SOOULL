@@ -1800,7 +1800,7 @@ function MemberSpace({ user, onSignOut }: { user: User; onSignOut: () => void })
 
       {error && activeSection !== 'stories' && <p className="form-feedback form-error" role="alert">{error}</p>}
       <div className="member-nav-shell">
-        <button className="member-nav-arrow" type="button" aria-label="Scroll sections left" onClick={() => sectionNavRef.current?.scrollBy({ left: -260, behavior: 'smooth' })}><ChevronLeft size={18}/></button>
+        <button className="member-nav-arrow" type="button" aria-label="Scroll sections left" onClick={() => { const el = sectionNavRef.current; if (el) el.scrollTo({ left: Math.max(0, el.scrollLeft - 240), behavior: 'smooth' }) }}}><ChevronLeft size={18}/></button>
       <nav ref={sectionNavRef} className="member-nav" aria-label="Your SOOULL collections">
         <button type="button" className={activeSection === 'stories' ? 'active' : ''} onClick={() => setActiveSection('stories')}><BookOpen size={16} /> Stories</button>
         <button type="button" className={activeSection === 'family-tree' ? 'active' : ''} onClick={() => setActiveSection('family-tree')}><Users size={16} /> Family Tree</button>
@@ -1811,7 +1811,7 @@ function MemberSpace({ user, onSignOut }: { user: User; onSignOut: () => void })
         <button type="button" className={activeSection === 'trusted' ? 'active' : ''} onClick={() => setActiveSection('trusted')}><Users size={16} /> Trusted People</button>
         <button type="button" className={activeSection === 'legacy-access' ? 'active' : ''} onClick={() => setActiveSection('legacy-access')}><KeyRound size={16} /> Legacy Access</button>
       </nav>
-        <button className="member-nav-arrow" type="button" aria-label="Scroll sections right" onClick={() => sectionNavRef.current?.scrollBy({ left: 260, behavior: 'smooth' })}><ChevronRight size={18}/></button>
+        <button className="member-nav-arrow" type="button" aria-label="Scroll sections right" onClick={() => { const el = sectionNavRef.current; if (el) el.scrollTo({ left: Math.min(el.scrollWidth - el.clientWidth, el.scrollLeft + 240), behavior: 'smooth' }) }}}><ChevronRight size={18}/></button>
       </div>
 
       {activeSection === 'stories' && <>
