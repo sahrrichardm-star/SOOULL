@@ -1801,7 +1801,7 @@ function MemberSpace({ user, onSignOut }: { user: User; onSignOut: () => void })
 
       {error && activeSection !== 'stories' && <p className="form-feedback form-error" role="alert">{error}</p>}
       <div className="member-nav-shell">
-        <button className="member-nav-arrow" type="button" aria-label="Scroll sections left" onClick={() => { const el = sectionNavRef.current; if (el) el.scrollTo({ left: Math.max(0, el.scrollLeft - 240), behavior: 'smooth' }) }}}><ChevronLeft size={18}/></button>
+        <button className="member-nav-arrow" type="button" aria-label="Scroll sections left" onClick={() => { const el = sectionNavRef.current; if (el) el.scrollTo({ left: Math.max(0, el.scrollLeft - 240), behavior: 'smooth' }) }}><ChevronLeft size={18}/></button>
       <nav ref={sectionNavRef} className="member-nav" aria-label="Your SOOULL collections">
         <button type="button" className={activeSection === 'stories' ? 'active' : ''} onClick={() => setActiveSection('stories')}><BookOpen size={16} /> Stories</button>
         <button type="button" className={activeSection === 'family-tree' ? 'active' : ''} onClick={() => setActiveSection('family-tree')}><Users size={16} /> Family Tree</button>
@@ -1812,7 +1812,7 @@ function MemberSpace({ user, onSignOut }: { user: User; onSignOut: () => void })
         <button type="button" className={activeSection === 'trusted' ? 'active' : ''} onClick={() => setActiveSection('trusted')}><Users size={16} /> Trusted People</button>
         <button type="button" className={activeSection === 'legacy-access' ? 'active' : ''} onClick={() => setActiveSection('legacy-access')}><KeyRound size={16} /> Legacy Access</button>
       </nav>
-        <button className="member-nav-arrow" type="button" aria-label="Scroll sections right" onClick={() => { const el = sectionNavRef.current; if (el) el.scrollTo({ left: Math.min(el.scrollWidth - el.clientWidth, el.scrollLeft + 240), behavior: 'smooth' }) }}}><ChevronRight size={18}/></button>
+        <button className="member-nav-arrow" type="button" aria-label="Scroll sections right" onClick={() => { const el = sectionNavRef.current; if (el) el.scrollTo({ left: Math.min(el.scrollWidth - el.clientWidth, el.scrollLeft + 240), behavior: 'smooth' }) }}><ChevronRight size={18}/></button>
       </div>
 
       {activeSection === 'stories' && <>
@@ -1857,7 +1857,8 @@ function MemberSpace({ user, onSignOut }: { user: User; onSignOut: () => void })
       {activeSection === 'legacy-access' && <Suspense fallback={<section className="stories-empty">Loading future access…</section>}><LegacyAccessModule userId={user.id} /></Suspense>}
       {activeSection === 'account' && <AccountSettings user={user} onNameSaved={setProfileName} onExportBackup={() => void exportMyData()} onRestoreFile={restoreMyData} exporting={exporting} restoring={restoring} exportProgress={exportProgress} restoreProgress={restoreProgress} />}
 
-      <footer className="dashboard-footer"><span>SOOULL · YOUR LIFE. YOUR LEGACY.</span><span>Private by design.</span></footer>\n      <SooullGuide />
+      <footer className="dashboard-footer"><span>SOOULL · YOUR LIFE. YOUR LEGACY.</span><span>Private by design.</span></footer>
+      <SooullGuide />
 
       {editorOpen && <div className="auth-screen story-editor-screen" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setEditorOpen(false) }}>
         <section className="auth-panel story-editor" role="dialog" aria-modal="true" aria-labelledby="story-editor-title">
