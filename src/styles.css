@@ -1706,3 +1706,26 @@ body { color: #f8fafc; background: #080d17; }
  .member-nav-arrow { display:none; }
  .member-nav { flex-wrap:wrap; overflow:visible; }
 }
+
+/* Collection navigation is constrained to its own viewport: no empty overscroll. */
+.member-nav-shell { display:grid; grid-template-columns:32px minmax(0,1fr) 32px; gap:8px; width:100%; max-width:100%; overflow:hidden; align-items:center; }
+.member-nav-shell .member-nav { display:flex; flex-wrap:nowrap; width:100%; min-width:0; max-width:100%; overflow-x:auto; overflow-y:hidden; overscroll-behavior-x:contain; scroll-behavior:smooth; scrollbar-width:none; padding:0 0 12px; margin:0; }
+.member-nav-shell .member-nav::-webkit-scrollbar { display:none; }
+.member-nav-shell .member-nav button { flex:0 0 auto; white-space:nowrap; }
+.member-nav-arrow { width:32px; height:34px; }
+@media(min-width:900px) {
+ .member-nav-shell { grid-template-columns:32px minmax(0,1fr) 32px; }
+ .member-nav-arrow { display:grid; }
+ .member-nav-shell .member-nav { flex-wrap:nowrap; }
+}
+/* Tree generations read as one connected family tree, not a disconnected card grid. */
+.family-tree-generation-list { position:relative; display:grid; justify-items:center; gap:0; padding:8px 0; }
+.family-generation { position:relative; width:100%; display:grid; justify-items:center; gap:12px; padding:16px 0 22px; }
+.family-generation + .family-generation::before { content:""; position:absolute; top:-1px; left:50%; height:18px; border-left:2px solid #d6a747; }
+.family-generation + .family-generation::after { content:""; position:absolute; top:16px; left:12%; right:12%; border-top:2px solid #d6a747; opacity:.65; }
+.family-generation-people { position:relative; width:100%; display:flex; flex-wrap:wrap; justify-content:center; gap:14px; padding-top:10px; }
+.family-generation-people::before { content:""; position:absolute; top:0; left:50%; height:10px; border-left:2px solid #d6a747; }
+.family-person-card { width:min(100%,280px); box-shadow:0 8px 22px rgba(0,0,0,.12); }
+.family-person-card::before { content:""; position:absolute; top:-11px; left:50%; height:11px; border-left:2px solid #d6a747; }
+.family-generation:first-child .family-generation-people::before,
+.family-generation:first-child .family-person-card::before { display:none; }
