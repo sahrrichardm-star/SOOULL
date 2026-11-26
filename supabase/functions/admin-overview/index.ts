@@ -60,8 +60,8 @@ Deno.serve(async (req: Request) => {
     }
 
     const payload = await req.json().catch(() => ({}));
-    const action = payload?.action === "users" ? "users" : "overview";
-    const requiredPermission = action === "users" ? "users.view" : "dashboard.view";
+    const action = payload?.action === "users" ? "users" : payload?.action === "audit" ? "audit" : "overview";
+    const requiredPermission = action === "users" ? "users.view" : action === "audit" ? "audit.view" : "dashboard.view";
     const { data: permitted, error: permissionError } = await userClient.rpc("admin_has_permission", {
       p_permission: requiredPermission,
     });
@@ -71,6 +71,33 @@ Deno.serve(async (req: Request) => {
     }
     if (permitted !== true) {
       return json(403, { error: "Your administrator role does not permit this action." }, origin);
+    }
+
+    if (action === "audit") {
+      const { data: rows, error: auditReadError } = await serverClient
+        .schema("private")
+        .from("admin_audit_logs")
+        .select("id,actor_id,target_user_id,action,details,created_at")
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (auditReadError) {
+        console.error("admin audit history read failed", auditReadError);
+        return json(503, { error: "Administrator audit history is temporarily unavailable." }, origin);
+      }
+      const actorIds = [...new Set((rows ?? []).map((row) => row.actor_id).filter(Boolean))];
+      const targetIds = [...new Set((rows ?? []).map((row) => row.target_user_id).filter(Boolean))];
+      const ids = [...new Set([...actorIds, ...targetIds])];
+      const emailMap = new Map<string, string>();
+      await Promise.all(ids.map(async (id) => {
+        const { data } = await serverClient.auth.admin.getUserById(id);
+        if (data?.user?.email) emailMap.set(id, data.user.email);
+      }));
+      const audit = (rows ?? []).map((row) => ({
+        ...row,
+        actor_email: emailMap.get(row.actor_id) ?? null,
+        target_email: row.target_user_id ? emailMap.get(row.target_user_id) ?? null : null,
+      }));
+      return json(200, { audit }, origin);
     }
 
     if (action === "users") {
