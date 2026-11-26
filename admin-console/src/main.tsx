@@ -45,37 +45,10 @@ function App() {
     let active = true
     async function verifySession() {
       try {
-        const [{ data: assurance, error: assuranceError }, { data: factorData, error: factorError }] = await Promise.all([
-          supabase!.auth.mfa.getAuthenticatorAssuranceLevel(),
-          supabase!.auth.mfa.listFactors(),
-        ])
-        if (assuranceError) throw assuranceError
-        if (factorError) throw factorError
-        const allTotp = factorData.totp as Array<{ id: string; friendly_name?: string; status: string }>
-        const verified = allTotp.filter(item => item.status === 'verified')
-        if (!active) return
-        const { data: activeRole, error: roleCheckError } = await supabase!.rpc('current_admin_role')
-        if (roleCheckError) throw roleCheckError
-        if (!activeRole) { setStage('not-admin'); return }
-        // Discard abandoned, unverified enrollments. An interrupted QR setup must be restarted.
-        const pending = allTotp.filter(item => item.status === 'unverified')
-        for (const factor of pending) {
-          const { error: cleanupError } = await supabase!.auth.mfa.unenroll({ factorId: factor.id })
-          if (cleanupError) throw cleanupError
-        }
-        setFactors(verified.map(item => ({ id: item.id, friendly_name: item.friendly_name })))
-        if (assurance.currentLevel !== 'aal2') {
-          if (verified.length) {
-            setFactorId(verified[0].id)
-            setStage('mfa')
-          } else {
-            setStage('enroll')
-          }
-          return
-        }
         const { data: role, error: roleError } = await supabase!.rpc('current_admin_role')
         if (roleError) throw roleError
-        if (active) setStage(role ? 'dashboard' : 'not-admin')
+        if (!active) return
+        setStage(role ? 'dashboard' : 'not-admin')
       } catch (caught) {
         if (active) {
           setError(caught instanceof Error ? caught.message : 'Your administrator session could not be verified.')
@@ -196,9 +169,9 @@ function App() {
         <div className="admin-auth-heading">
           <span className="admin-auth-kicker"><ShieldCheck size={14} /> RESTRICTED ACCESS</span>
           <h1>{stage === 'mfa' ? 'Verify your identity' : stage === 'enroll' ? 'Secure this account' : stage === 'forgot' || stage === 'sent' ? 'Reset password' : stage === 'not-admin' ? 'No administrator access' : 'Administrator sign in'}</h1>
-          <p>{stage === 'mfa' ? 'Enter the six-digit code from your authenticator app.' : stage === 'enroll' ? 'Administrator access requires an authenticator. Set it up before continuing.' : stage === 'not-admin' ? 'This account does not have an active SOOULL administrator role.' : stage === 'sent' ? 'If the address belongs to an account, a password-reset link has been sent.' : 'Sign in with your authorised SOOULL administrator account.'}</p>
+          <p>{stage === 'mfa' ? 'Enter the six-digit code from your authenticator app.' : stage === 'enroll' ? 'Two-step verification is optional. You can use your administrator account password to continue.' : stage === 'not-admin' ? 'This account does not have an active SOOULL administrator role.' : stage === 'sent' ? 'If the address belongs to an account, a password-reset link has been sent.' : 'Sign in with your authorised SOOULL administrator account.'}</p>
         </div>
-        {stage === 'checking' && <div className="admin-auth-loading"><span className="loading-ring" />Checking administrator permissions and MFA…</div>}
+        {stage === 'checking' && <div className="admin-auth-loading"><span className="loading-ring" />Checking administrator permissions…</div>}
         {stage === 'config-error' && <p className="admin-auth-error">The administrator application is missing its Supabase public configuration.</p>}
         {stage === 'signin' && <form className="admin-auth-form" onSubmit={signIn}>
           <label htmlFor="admin-email">Email address</label>
@@ -238,7 +211,7 @@ function App() {
         {error && <p className="admin-auth-error" role="alert">{error}</p>}
         {notice && <p className="admin-auth-notice" role="status">{notice}</p>}
         {(stage === 'mfa' || stage === 'enroll' || stage === 'not-admin') && <button className="admin-auth-link" type="button" onClick={() => void signOut()}>Sign out</button>}
-        <footer className="admin-auth-footer"><LockKeyhole size={13} /> Protected by SOOULL identity, MFA and role-based access controls</footer>
+        <footer className="admin-auth-footer"><LockKeyhole size={13} /> Protected by SOOULL identity, role-based access controls and audit logging</footer>
       </section>
     </main>
   )
