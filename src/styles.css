@@ -1729,3 +1729,14 @@ body { color: #f8fafc; background: #080d17; }
 .family-person-card::before { content:""; position:absolute; top:-11px; left:50%; height:11px; border-left:2px solid #d6a747; }
 .family-generation:first-child .family-generation-people::before,
 .family-generation:first-child .family-person-card::before { display:none; }
+
+.sooull-guide{position:fixed;z-index:40;right:max(18px,env(safe-area-inset-right));bottom:max(18px,env(safe-area-inset-bottom));display:grid;justify-items:end;gap:10px}
+.sooull-guide-trigger{display:flex;align-items:center;gap:9px;padding:8px 14px 8px 8px;border:1px solid #edbd638c;border-radius:999px;color:#fff;background:#101d2dd9;box-shadow:0 12px 36px #0005;backdrop-filter:blur(18px);font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.sooull-guide-avatar{display:grid;place-items:center;width:38px;height:38px;flex:0 0 38px;border-radius:50%;color:#17212e;background:radial-gradient(circle at 30% 25%,#fff2cc,#edbd63 55%,#b77c2d);box-shadow:inset 0 1px 3px #fff9,0 0 18px #edbd6340}
+.sooull-guide-panel{width:min(360px,calc(100vw - 32px));padding:16px;border:1px solid #edbd6370;border-radius:20px;color:#f8fafc;background:#0c1828e0;box-shadow:0 22px 65px #0008;backdrop-filter:blur(22px)}
+.sooull-guide-panel header{display:flex;align-items:center;gap:10px}.sooull-guide-panel header>div:nth-child(2){display:grid;gap:3px;flex:1}.sooull-guide-panel header strong{font-size:14px}.sooull-guide-panel header small,.sooull-guide-disclaimer{color:#bdc8d7;font-size:10px}
+.sooull-guide-panel header>button{display:grid;place-items:center;width:30px;height:30px;border:1px solid #ffffff30;border-radius:50%;color:#fff;background:#ffffff10}
+.sooull-guide-intro{color:#e7edf5;font-size:12px;margin:16px 0 9px}.sooull-guide-choices{display:grid;gap:7px}
+.sooull-guide-choices button{display:flex;align-items:center;gap:9px;padding:10px;border:1px solid #ffffff24;border-radius:10px;color:#f8fafc;background:#ffffff0b;text-align:left;font:inherit;font-size:11px;cursor:pointer}
+.sooull-guide-choices button:hover{border-color:#edbd63;background:#edbd6318}.sooull-guide-answer{padding:12px;margin:12px 0;border-radius:10px;color:#17212e;background:#fff;font-size:12px;line-height:1.6}.sooull-guide-disclaimer{display:block;margin-top:10px}
+@media(max-width:600px){.sooull-guide-panel{width:min(340px,calc(100vw - 28px))}.sooull-guide-trigger{font-size:11px}}
