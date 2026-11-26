@@ -33,7 +33,7 @@ const functionErrorMessage = async (caught: unknown, fallback: string) => {
     if (context && typeof context.clone === 'function') {
       const body = await context.clone().json().catch(() => null) as { error?: string } | null
       if (body?.error) return body.error
-      if (context.status === 403) return 'Your administrator session needs verified two-step authentication. Enrol an authenticator and sign in again.'
+      if (context.status === 403) return 'Administrator access was denied. Check that your administrator role is active and try again.'
       if (context.status === 401) return 'Your session has expired. Sign in again.'
     }
   }
@@ -166,7 +166,7 @@ export default function AdminDashboard({ onSignOut }: { onSignOut: () => void })
       })
       if (invokeError) throw invokeError
       if (data?.error) throw new Error(String(data.error))
-      setAdminMessage('Administrator access assigned to ' + String(data.email) + '. The account must complete sign-in and MFA before accessing administration.')
+      setAdminMessage('Administrator access assigned to ' + String(data.email) + '. The account must complete sign-in before accessing administration.')
       setAdminEmail('')
       setAdminReason('')
       await loadAdmins()
@@ -256,7 +256,7 @@ export default function AdminDashboard({ onSignOut }: { onSignOut: () => void })
         <article className="admin-panel">
           <div className="admin-panel-heading"><ShieldAlert size={18} /><h2>Security centre</h2></div>
           <p>Authentication, administrator access and platform security checks will be consolidated here.</p>
-          <span className="admin-status-note"><span className="admin-status-dot" /> Administrator API protected by MFA</span>
+          <span className="admin-status-note"><span className="admin-status-dot" /> Administrator API protected by role-based access controls</span>
         </article>
         <article className="admin-panel">
           <div className="admin-panel-heading"><Activity size={18} /><h2>Operations</h2></div>
